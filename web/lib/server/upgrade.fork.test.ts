@@ -1,5 +1,5 @@
 /**
- * Re-verification at a higher level on an anvil fork of Monad testnet: a creator registered with
+ * Re-verification at a higher level on an arc-anvil fork of Arc mainnet: a creator registered with
  * passive liveness (didit:passive) is upgraded to active liveness with CreatorRegistry.updateAttestation;
  * a same-level or lower re-attestation is refused, and a second registration is refused.
  */
@@ -17,7 +17,8 @@ import { hasAnvil, startFork, takeOverRoles, wallet, type Fork } from "@/lib/dev
 import { sealDevReferenceSet } from "@/lib/dev/seed";
 import type { ReferenceSet } from "@/lib/crypto/envelope";
 
-const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1";
+// Needs arc-anvil and the deployed contracts (lib/deployment.ts).
+const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1" && !!deployment.CreatorRegistry;
 
 describe.skipIf(!run)("re-verify at a higher level", () => {
   let fork: Fork;
@@ -32,7 +33,7 @@ describe.skipIf(!run)("re-verify at a higher level", () => {
     const keyFile = path.join(tmp, "attester.key");
     (await import("node:fs")).writeFileSync(keyFile, attesterKey);
     Object.assign(process.env, {
-      MONAD_RPC_URL: fork.url,
+      ARC_RPC_URL: fork.url,
       DB_DIR: path.join(tmp, "db"),
       INDEX_CACHE_DIR: tmp,
       INDEX_START_BLOCK: String(fork.forkBlock + 1n),
@@ -55,7 +56,7 @@ describe.skipIf(!run)("re-verify at a higher level", () => {
       adult: true,
     };
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
-    const sig = await signAttestation(attesterKey, deployment.CreatorRegistry!, 10143, creator, a, 0n, deadline);
+    const sig = await signAttestation(attesterKey, deployment.CreatorRegistry!, 5042, creator, a, 0n, deadline);
     const terms = { categories: 1 << 8, regions: 1, maxDuration: 86_400n, maxRenders: 5, pricePerRender: 1_000_000n, autoApprove: true };
     const hash = await wallet(fork, creatorKey).writeContract({ address: deployment.CreatorRegistry!, abi: CreatorRegistryAbi, functionName: "register", args: [creator, a, deadline, sig, terms] } as never);
     await fork.pub.waitForTransactionReceipt({ hash });

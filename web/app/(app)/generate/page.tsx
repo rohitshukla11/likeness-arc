@@ -155,7 +155,7 @@ function Generate() {
     return (
       <NoticePage
         title="Generate"
-        description="Render under a licence. Each render pays the creator and anchors a receipt on Monad."
+        description="Render under a licence. Each render pays the creator and anchors a receipt on Arc."
         action={
           <Link href="/onboard" className={btnClass("ink")}>
             Sign in
@@ -171,7 +171,7 @@ function Generate() {
   return (
     <AppPage
       title="Generate"
-      description="Render under a licence. Each render pays the creator and anchors a receipt on Monad."
+      description="Render under a licence. Each render pays the creator and anchors a receipt on Arc."
       actions={
         <Link href="/dashboard" className={btnClass("outline")}>
           Your licences

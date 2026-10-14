@@ -1,28 +1,32 @@
 /**
- * Monad testnet, from https://docs.monad.xyz/developer-essentials/testnet.md.
+ * Arc mainnet, from https://docs.arc.io/arc/references/rpc-endpoints.md and
+ * https://docs.arc.io/arc/references/contract-addresses.md.
  *
- * Not viem's built-in `monadTestnet` (viem 2.57): its explorer, testnet.monadexplorer.com, and its
- * multicall `blockCreated` predate the testnet reset of 2025-12-16.
+ * USDC is Arc's native gas token. It has two interfaces over one balance: native value with 18
+ * decimals (gas, and the gas top-up) and the ERC-20 interface at 0x3600…0000 with 6 decimals (every
+ * licence price, deposit and payout). The two are never mixed.
  */
 import { defineChain, type Address } from "viem";
 
-export const monadTestnet = defineChain({
-  id: 10_143,
-  name: "Monad Testnet",
-  nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-  rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz"] } },
-  blockExplorers: { default: { name: "MonadVision", url: "https://testnet.monadvision.com" } },
+export const arcMainnet = defineChain({
+  id: 5042,
+  name: "Arc",
+  nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+  rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_ARC_RPC_URL ?? "https://rpc.mainnet.arc.io"] } },
+  blockExplorers: { default: { name: "Arc Explorer", url: "https://explorer.arc.io" } },
   contracts: {
-    // Canonical deployment, listed on the testnet page above.
+    // Listed on the contract addresses page above.
     multicall3: { address: "0xcA11bde05977b3631167028862bE2a173976CA11" },
   },
-  testnet: true,
 });
 
-/** Circle USDC, 6 decimals: https://developers.circle.com/stablecoins/usdc-contract-addresses */
-export const USDC: Address = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
+/** Circle USDC's ERC-20 interface on Arc, 6 decimals (the contract addresses page above). */
+export const USDC: Address = "0x3600000000000000000000000000000000000000";
+
+/** Arc's mempool drops transactions whose maxFeePerGas is under 20 gwei (docs: gas and fees). */
+export const MIN_MAX_FEE_PER_GAS = 20_000_000_000n;
 
 export const explorer = {
-  tx: (hash: string) => `${monadTestnet.blockExplorers.default.url}/tx/${hash}`,
-  address: (a: string) => `${monadTestnet.blockExplorers.default.url}/address/${a}`,
+  tx: (hash: string) => `${arcMainnet.blockExplorers.default.url}/tx/${hash}`,
+  address: (a: string) => `${arcMainnet.blockExplorers.default.url}/address/${a}`,
 };

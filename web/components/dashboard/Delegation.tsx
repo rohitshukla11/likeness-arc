@@ -2,7 +2,7 @@
 
 /**
  * Brand → render service delegation. With Dynamic configured and a Dynamic wallet, the brand delegates
- * its embedded wallet's key share (delegateWaasKeyShares) with a signer rule pinned to chain 10143 and
+ * its embedded wallet's key share (delegateWaasKeyShares) with a signer rule pinned to chain 5042 and
  * the protocol's addresses; the server adds the payRender-only and total-cap checks Dynamic's signer
  * layer does not evaluate. A seeded DEV brand can use dev delegation instead (labelled as such).
  */

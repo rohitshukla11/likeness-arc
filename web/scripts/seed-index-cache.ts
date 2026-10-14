@@ -6,7 +6,7 @@
  *
  * It first brings the local cache (web/.data) up to the current block, then uploads it under the
  * name the deployment looks for. That name depends on the RPC URL and start block, so run this with
- * the same MONAD_RPC_URL / NEXT_PUBLIC_MONAD_RPC_URL as the deployment. The cache holds only public
+ * the same ARC_RPC_URL / NEXT_PUBLIC_ARC_RPC_URL as the deployment. The cache holds only public
  * chain events.
  */
 import { put } from "@vercel/blob";

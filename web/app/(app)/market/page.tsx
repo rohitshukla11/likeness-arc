@@ -34,7 +34,7 @@ export default async function MarketPage() {
       }));
   } catch (e) {
     return (
-      <AppPage title="Marketplace" description="Verified creators on Monad testnet. Every licence is approved by the person in it.">
+      <AppPage title="Marketplace" description="Verified creators on Arc mainnet. Every licence is approved by the person in it.">
         <ErrorCard
           action={
             <a href="/market" className={btnClass("outline")}>
@@ -42,10 +42,10 @@ export default async function MarketPage() {
             </a>
           }
         >
-          Couldn&apos;t read the creator registry on Monad testnet ({(e as Error).message}). The RPC may be busy; trying again usually works.
+          Couldn&apos;t read the creator registry on Arc mainnet ({(e as Error).message}). The RPC may be busy; trying again usually works.
         </ErrorCard>
       </AppPage>
     );
   }
-  return <Marketplace creators={creators} source={historySource() === "envio" ? "the Envio indexer" : "Monad testnet (RPC)"} />;
+  return <Marketplace creators={creators} source={historySource() === "envio" ? "the Envio indexer" : "Arc mainnet (RPC)"} />;
 }

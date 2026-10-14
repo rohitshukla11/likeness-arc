@@ -21,7 +21,7 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
             </button>
           }
         >
-          This page could not load. Nothing was signed or sent. If the Monad testnet RPC is busy, trying again in a moment usually works.
+          This page could not load. Nothing was signed or sent. If the Arc RPC is busy, trying again in a moment usually works.
           {error.digest && <span className="mt-2 block font-mono text-[13px]">Reference: {error.digest}</span>}
         </NoticePage>
       </main>

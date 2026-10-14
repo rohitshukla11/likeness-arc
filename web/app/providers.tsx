@@ -2,8 +2,8 @@
 
 /**
  * Dynamic JS SDK (https://www.dynamic.xyz/docs/javascript/reference/react-quickstart.md):
- * one client, the WaaS EVM extension for embedded wallets, and Monad testnet as the only network.
- * Monad is not in Dynamic's default list, so it is supplied through `transformers.networksData`
+ * one client, the WaaS EVM extension for embedded wallets, and Arc mainnet as the only network.
+ * Arc is not in Dynamic's default list, so it is supplied through `transformers.networksData`
  * (documented on DynamicClientConfig in @dynamic-labs-sdk/client 1.38.0).
  */
 import { createDynamicClient, type DynamicClient } from "@dynamic-labs-sdk/client";
@@ -12,7 +12,7 @@ import { DynamicProvider } from "@dynamic-labs-sdk/react-hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { WalletProvider } from "@/components/wallet/WalletProvider";
-import { monadTestnet } from "@/lib/chain";
+import { arcMainnet } from "@/lib/chain";
 
 const environmentId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
 
@@ -33,12 +33,12 @@ function getClient(): DynamicClient | undefined {
           {
             ...(networks.find((n) => n.chain === "EVM") ?? networks[0]),
             chain: "EVM",
-            networkId: String(monadTestnet.id),
-            name: monadTestnet.name,
-            displayName: monadTestnet.name,
-            nativeCurrency: monadTestnet.nativeCurrency,
-            rpcUrls: { http: [...monadTestnet.rpcUrls.default.http] },
-            blockExplorerUrls: [monadTestnet.blockExplorers.default.url],
+            networkId: String(arcMainnet.id),
+            name: arcMainnet.name,
+            displayName: arcMainnet.name,
+            nativeCurrency: arcMainnet.nativeCurrency,
+            rpcUrls: { http: [...arcMainnet.rpcUrls.default.http] },
+            blockExplorerUrls: [arcMainnet.blockExplorers.default.url],
           },
         ],
       },

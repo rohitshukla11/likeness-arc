@@ -39,7 +39,7 @@ const certs = existsSync("../.secrets/c2pa/signer.pem");
 describe.skipIf(!certs)("DevRenderer and C2PA", () => {
   const assertion: LicenceAssertion = {
     protocol: "likeness/1",
-    chainId: 10143,
+    chainId: 5042,
     licenceId: "7",
     renderIndex: 0,
     creator: "0x1111111111111111111111111111111111111111",

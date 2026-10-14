@@ -7,12 +7,12 @@
  *   two banned prompts refused → verify one file →
  *   revoke → render refused → verify again ("licensed when made, since revoked") → refund
  *
- *   pnpm demo --fork    A local anvil fork of Monad testnet: the deployed contracts and Circle's real
- *                       USDC contract, with local balances. Hashes are local, not on MonadVision.
- *   pnpm seed           Monad testnet, seed only: the render agent, and a test brand wallet with gas.
+ *   pnpm demo --fork    A local arc-anvil fork of Arc mainnet: the deployed contracts and Circle's real
+ *                       USDC contract, with local balances. Hashes are local, not on Arc Explorer.
+ *   pnpm seed           Arc mainnet, seed only: the render agent, and a test brand wallet with gas.
  *
  * The scripted creator ("dev-unverified", synthetic drawings) exists only on the throwaway fork. On
- * Monad testnet there is no test creator: the live demo runs in the app with a Didit-verified creator.
+ * Arc mainnet there is no test creator: the live demo runs in the app with a Didit-verified creator.
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -38,7 +38,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { CreatorRegistryAbi } from "@/lib/abi/CreatorRegistry";
 import { LicenseEscrowAbi } from "@/lib/abi/LicenseEscrow";
 import { LicenseRegistryAbi } from "@/lib/abi/LicenseRegistry";
-import { monadTestnet, USDC } from "@/lib/chain";
+import { arcMainnet, USDC } from "@/lib/chain";
 import { b64u } from "@/lib/crypto/encoding";
 import { devNamespaceKey } from "@/lib/crypto/devkeys";
 import { unwrapDek } from "@/lib/crypto/envelope";
@@ -63,7 +63,7 @@ let forkHandle: Fork | undefined;
 
 const line = (s = "") => console.log(s);
 const head = (s: string) => line(`\n── ${s}`);
-const link = (h: string) => (FORK ? `${h}  (local fork)` : `https://testnet.monadvision.com/tx/${h}`);
+const link = (h: string) => (FORK ? `${h}  (local fork)` : `https://explorer.arc.io/tx/${h}`);
 
 function readKey(file: string): Hex | undefined {
   if (!existsSync(file)) return undefined;
@@ -87,13 +87,13 @@ async function main() {
   if (existsSync(".env.local")) process.loadEnvFile(".env.local");
   let fork: Fork | undefined;
   let pub: PublicClient;
-  let chain: Chain = monadTestnet;
-  let rpc = process.env.MONAD_RPC_URL || "https://testnet-rpc.monad.xyz";
+  let chain: Chain = arcMainnet;
+  let rpc = process.env.ARC_RPC_URL || "https://rpc.mainnet.arc.io";
   const dataDir = path.resolve(FORK ? ".data/demo-fork" : ".data");
   const devDir = FORK ? path.join(dataDir, "dev-keys") : path.join(SECRETS, "dev");
 
   if (FORK) {
-    line("Starting an anvil fork of Monad testnet…");
+    line("Starting an arc-anvil fork of Arc mainnet…");
     fork = forkHandle = await startFork(Number(process.env.DEMO_FORK_PORT ?? 8555));
     rpc = fork.url;
     chain = fork.chain;
@@ -102,7 +102,7 @@ async function main() {
     pub = createPublicClient({ chain, transport: http(rpc) }) as PublicClient;
   }
   Object.assign(process.env, {
-    MONAD_RPC_URL: rpc,
+    ARC_RPC_URL: rpc,
     STORE_DIR: path.join(dataDir, "vault"),
     DB_DIR: path.join(dataDir, "db"),
     RENDERS_DIR: path.join(dataDir, "renders"),
@@ -126,7 +126,7 @@ async function main() {
   }
   async function sendValue(step: string, w: W, to: Address, value: bigint) {
     const t = Date.now();
-    const hash = await w.sendTransaction({ to, value, gas: 21_000n });
+    const hash = await w.sendTransaction({ to, value });
     const r = await pub.waitForTransactionReceipt({ hash, pollingInterval: 100 });
     txs.push({ step, hash, gasUsed: r.gasUsed, ms: Date.now() - t });
     line(`   ${step}: ${link(hash)}`);
@@ -157,7 +157,7 @@ async function main() {
     const brandKey = generatePrivateKey();
     seeded = { note: "DEV ONLY: throwaway test wallets.", wallets: [{ role: "brand", label: "Brew & Co. (test brand)", address: privateKeyToAccount(brandKey).address, key: brandKey }] };
   }
-  // A test creator only ever exists on the fork; on Monad testnet any old one is dropped from the file.
+  // A test creator only ever exists on the fork; on Arc mainnet any old one is dropped from the file.
   seeded.wallets = seeded.wallets.filter((w) => w.role !== "creator" || FORK);
   if (FORK && !seeded.wallets.some((w) => w.role === "creator")) {
     const creatorKey = generatePrivateKey();
@@ -170,7 +170,7 @@ async function main() {
   const brand = wallet(B.key);
   if (!FORK && !SEED_ONLY) {
     line("\nThe scripted demo runs only on a fork: pnpm demo --fork.");
-    line("On Monad testnet there is no test creator; run the demo in the app with a Didit-verified creator.");
+    line("On Arc mainnet there is no test creator; run the demo in the app with a Didit-verified creator.");
     process.exitCode = 2;
     return;
   }
@@ -189,7 +189,7 @@ async function main() {
     const brandHas = await pub.readContract({ address: USDC, abi: erc20Abi, functionName: "balanceOf", args: [B.address] });
     if (have + brandHas < DEPOSIT) {
       line(`\nThe funder ${funder} holds ${usdc.format(have)} USDC and the test brand ${usdc.format(brandHas)}; the demo needs ${usdc.format(DEPOSIT)}.`);
-      line("Get Circle testnet USDC at https://faucet.circle.com (network: Monad Testnet) for either address, then re-run.");
+      line("Get Circle testnet USDC at https://faucet.circle.com (network: Arc mainnet) for either address, then re-run.");
       line("Or run the same demo on a local fork now: pnpm demo --fork");
       process.exitCode = 2;
       return;
@@ -200,15 +200,15 @@ async function main() {
   head("2. Gas");
   if (FORK) {
     for (const a of [C!.address, B.address]) await fork!.test.setBalance({ address: a, value: parseEther("5") });
-    line("   fork: 5 MON each");
+    line("   fork: 5 USDC (native, for gas) each");
   } else {
     const gasKey = readKey(path.join(SECRETS, "drip.key")) ?? funderKey;
     if (!gasKey) throw new Error("no key to pay gas from (../.secrets/drip.key)");
     const gasWallet = wallet(gasKey);
     for (const [who, a] of [["brand", B.address]] as const) {
       const bal = await pub.getBalance({ address: a });
-      if (bal < parseEther("0.15")) await sendValue(`MON for ${who} gas`, gasWallet, a, parseEther("0.3"));
-      else line(`   ${who} has ${formatEther(bal)} MON`);
+      if (bal < parseEther("0.15")) await sendValue(`USDC for ${who} gas`, gasWallet, a, parseEther("0.3"));
+      else line(`   ${who} has ${formatEther(bal)} USDC for gas`);
     }
   }
 
@@ -298,7 +298,7 @@ async function main() {
   line(`   creator re-wrapped the photo key to the service key; ${accepted.captures} captures open and match their digests`);
 
   // ------------------------------------------------------------ delegation
-  head("8. Delegated render payments (DEV delegation: payRender only, chain 10143, total cap)");
+  head("8. Delegated render payments (DEV delegation: payRender only, chain 5042, total cap)");
   const { saveGrant } = await import("@/lib/server/delegation");
   await saveGrant({ licensee: B.address.toLowerCase() as Address, provider: "dev-local", capUsdc: (PRICE * BigInt(RENDERS)).toString(), spentUsdc: "0", createdAt: Date.now() });
   line(`   cap ${usdc.format(PRICE * BigInt(RENDERS))} USDC. Dynamic delegated access replaces this when its credentials are set.`);
@@ -359,7 +359,7 @@ async function main() {
   summary();
 
   function summary() {
-    head(`Transactions (${FORK ? "local fork of Monad testnet" : "Monad testnet"})`);
+    head(`Transactions (${FORK ? "local fork of Arc mainnet" : "Arc mainnet"})`);
     for (const t of txs) line(`   ${t.step.padEnd(44)} ${t.hash}${t.gasUsed ? `  gas ${t.gasUsed}` : ""}${t.ms !== undefined ? `  ${t.ms} ms` : ""}`);
   }
 }

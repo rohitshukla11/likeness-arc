@@ -13,7 +13,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createPublicClient, createWalletClient, http, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { LicenseEscrowAbi } from "@/lib/abi/LicenseEscrow";
-import { monadTestnet } from "@/lib/chain";
+import { arcMainnet } from "@/lib/chain";
 import { deployment } from "@/lib/deployment";
 
 function env(name: string): string {
@@ -42,16 +42,16 @@ async function main() {
     console.log(`Created Dynamic server wallet ${w.walletMetadata.accountAddress}; shares saved to ${file}`);
   }
   const agent = saved.walletMetadata.accountAddress as Address;
-  const pub = createPublicClient({ chain: monadTestnet, transport: http() });
+  const pub = createPublicClient({ chain: arcMainnet, transport: http() });
   if (await pub.readContract({ address: deployment.LicenseEscrow!, abi: LicenseEscrowAbi, functionName: "isRenderAgent", args: [agent] })) {
     console.log(`${agent} is already a registered render agent.`);
     return;
   }
   const ownerKey = readFileSync("../.secrets/deployer.key", "utf8").trim() as Hex;
-  const owner = createWalletClient({ chain: monadTestnet, transport: http(), account: privateKeyToAccount(ownerKey) });
+  const owner = createWalletClient({ chain: arcMainnet, transport: http(), account: privateKeyToAccount(ownerKey) });
   const hash = await owner.writeContract({ address: deployment.LicenseEscrow!, abi: LicenseEscrowAbi, functionName: "setRenderAgent", args: [agent, true], gas: 90_000n });
   await pub.waitForTransactionReceipt({ hash });
-  console.log(`Registered ${agent} as render agent: https://testnet.monadvision.com/tx/${hash}`);
+  console.log(`Registered ${agent} as render agent: https://explorer.arc.io/tx/${hash}`);
 }
 
 main().catch((e) => {

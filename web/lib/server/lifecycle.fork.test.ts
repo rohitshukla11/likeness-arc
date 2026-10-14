@@ -1,5 +1,5 @@
 /**
- * The whole licence lifecycle on an anvil fork of Monad testnet: the deployed contracts, Circle's real
+ * The whole licence lifecycle on an arc-anvil fork of Arc mainnet: the deployed contracts, Circle's real
  * USDC contract, and the app's own server modules (no mocks). Skipped without anvil or with
  * SKIP_FORK_TESTS=1; needs network access to fork the public RPC.
  *
@@ -27,10 +27,11 @@ import { dealUsdc, hasAnvil, startFork, takeOverRoles, wallet, type Fork } from 
 import { registerDevCreator, sealDevReferenceSet, syntheticPortraits } from "@/lib/dev/seed";
 import { approvalTypedData, type Terms } from "@/lib/licensing";
 
-const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1";
+// Needs arc-anvil and the deployed contracts (lib/deployment.ts).
+const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1" && !!deployment.CreatorRegistry;
 const PRICE = 1_500_000n; // 1.5 USDC
 
-describe.skipIf(!run)("licence lifecycle on a Monad testnet fork", () => {
+describe.skipIf(!run)("licence lifecycle on an Arc mainnet fork", () => {
   let fork: Fork;
   const keys = { attester: generatePrivateKey(), agent: generatePrivateKey(), creator: generatePrivateKey(), brand: generatePrivateKey() };
   const addr = Object.fromEntries(Object.entries(keys).map(([k, v]) => [k, privateKeyToAccount(v).address.toLowerCase()])) as Record<keyof typeof keys, Address>;
@@ -48,7 +49,7 @@ describe.skipIf(!run)("licence lifecycle on a Monad testnet fork", () => {
     writeFileSync(path.join(tmp, "agent.key"), keys.agent);
     writeFileSync(path.join(tmp, "dev", `${addr.brand}.key`), keys.brand);
     Object.assign(process.env, {
-      MONAD_RPC_URL: fork.url,
+      ARC_RPC_URL: fork.url,
       STORE_DIR: path.join(tmp, "vault"),
       DB_DIR: path.join(tmp, "db"),
       INDEX_CACHE_DIR: tmp,
@@ -165,12 +166,12 @@ describe.skipIf(!run)("licence lifecycle on a Monad testnet fork", () => {
     const escrow = deployment.LicenseEscrow!;
     const depositData = encodeFunctionData({ abi: LicenseEscrowAbi, functionName: "deposit", args: [licenceId, 1n] });
     const payData = encodeFunctionData({ abi: LicenseEscrowAbi, functionName: "payRender", args: [licenceId, keccak256("0x01"), addr.agent, 1n, "0x"] });
-    await expect(checkPolicy({ to: escrow, data: depositData, value: 0n, chainId: 10143 }, grant)).rejects.toThrow(/not payRender/);
-    await expect(checkPolicy({ to: USDC, data: payData, value: 0n, chainId: 10143 }, grant)).rejects.toThrow(/not the Likeness escrow/);
+    await expect(checkPolicy({ to: escrow, data: depositData, value: 0n, chainId: 5042 }, grant)).rejects.toThrow(/not payRender/);
+    await expect(checkPolicy({ to: USDC, data: payData, value: 0n, chainId: 5042 }, grant)).rejects.toThrow(/not the Likeness escrow/);
     await expect(checkPolicy({ to: escrow, data: payData, value: 0n, chainId: 1 }, grant)).rejects.toThrow(/chain 1/);
-    await expect(checkPolicy({ to: escrow, data: payData, value: 1n, chainId: 10143 }, grant)).rejects.toThrow(/value/);
-    await expect(checkPolicy({ to: escrow, data: payData, value: 0n, chainId: 10143 }, { ...grant, spentUsdc: (PRICE + 1n).toString() })).rejects.toBeInstanceOf(PolicyError);
-    expect(await checkPolicy({ to: escrow, data: payData, value: 0n, chainId: 10143 }, grant)).toBe(PRICE);
+    await expect(checkPolicy({ to: escrow, data: payData, value: 1n, chainId: 5042 }, grant)).rejects.toThrow(/value/);
+    await expect(checkPolicy({ to: escrow, data: payData, value: 0n, chainId: 5042 }, { ...grant, spentUsdc: (PRICE + 1n).toString() })).rejects.toBeInstanceOf(PolicyError);
+    expect(await checkPolicy({ to: escrow, data: payData, value: 0n, chainId: 5042 }, grant)).toBe(PRICE);
 
     const agent = await renderAgent();
     expect(agent.address.toLowerCase()).toBe(addr.agent);

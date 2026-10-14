@@ -6,7 +6,7 @@
  *   2. Your company: name, website, work email, optional logo, intended uses and expected volume. The
  *      domain check proves the work email (the Dynamic sign-in email, or a code sent to it); the badge
  *      "Verified domain" is computed by the server, only when that email's domain matches the website.
- *   3. Agree and fund: the brand policy, signed by the wallet; then the USDC balance and the faucet.
+ *   3. Agree and fund: the brand policy, signed by the wallet; then the USDC balance and how to fund it.
  * Where the brand is comes from the server, so a refresh resumes at the right step.
  */
 import Link from "next/link";
@@ -27,7 +27,7 @@ import {
   emailMatchesWebsite,
   websiteDomain,
 } from "@/lib/brand-policy";
-import { explorer, monadTestnet, USDC } from "@/lib/chain";
+import { explorer, arcMainnet, USDC } from "@/lib/chain";
 import { api, reason } from "@/lib/client/tx";
 import { sha256Hex } from "@/lib/crypto/envelope";
 import { dynamicSessionToken, useDynamicState } from "@/app/providers";
@@ -37,7 +37,7 @@ import { Note, Tx, inputClass } from "@/components/ui";
 import { Progress, SignIn } from "@/components/onboard/OnboardFlow";
 import { useWallet, type ActiveWallet } from "@/components/wallet/WalletProvider";
 
-const pub = createPublicClient({ chain: monadTestnet, transport: http() });
+const pub = createPublicClient({ chain: arcMainnet, transport: http() });
 const STEPS = ["Sign in", "Your company", "Agree and fund"] as const;
 
 type Brand = { name: string; website: string; workEmailDomain: string | null; badge: "verified-domain" | "unverified"; uses: string[]; monthlyRenders: string; logo: string | null; policySigned: boolean };
@@ -65,7 +65,7 @@ export function BrandOnboard() {
     load().catch(() => setBrand(null));
   }, [load]);
 
-  // MON for gas, once, in the background, for a new empty email wallet (same limits as for creators).
+  // USDC for gas, once, in the background, for a new empty email wallet (same limits as for creators).
   const dripped = useRef<string | null>(null);
   const drip = useCallback(async (address: `0x${string}`) => {
     setDripError(null);
@@ -403,7 +403,7 @@ function AgreeAndFund({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usdc, setUsdc] = useState<bigint | null>(null);
-  const [mon, setMon] = useState<string | null>(null);
+  const [gas, setGas] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -412,7 +412,7 @@ function AgreeAndFund({
       pub.getBalance({ address: wallet.address }),
     ]);
     setUsdc(u);
-    setMon(formatEther(m));
+    setGas(formatEther(m));
   }, [wallet.address]);
   useEffect(() => {
     refresh().catch(() => {});
@@ -483,13 +483,13 @@ function AgreeAndFund({
         <dl className="m-0 grid grid-cols-1 gap-x-4 gap-y-2 text-[15px] sm:grid-cols-[8rem_1fr]">
           <dt className="text-grey">USDC</dt>
           <dd className="tnum m-0 text-[20px] font-bold">{usdc === null ? "…" : formatUnits(usdc, 6)}</dd>
-          <dt className="text-grey">MON (gas)</dt>
-          <dd className="tnum m-0">{mon ?? "…"}</dd>
+          <dt className="text-grey">USDC (gas)</dt>
+          <dd className="tnum m-0">{gas ?? "…"}</dd>
           <dt className="text-grey">Your address</dt>
           <dd className="m-0 flex flex-wrap items-center gap-2">
             <a href={explorer.address(wallet.address)} target="_blank" rel="noreferrer" className="break-all font-mono text-[13px]">
               {wallet.address}
-              <span className="sr-only"> (opens MonadVision)</span>
+              <span className="sr-only"> (opens Arc Explorer)</span>
             </a>
             <button
               type="button"
@@ -504,10 +504,15 @@ function AgreeAndFund({
             </button>
           </dd>
         </dl>
-        <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className={pillClass("lime", "self-start")}>
-          Get test USDC<span className="sr-only"> (opens faucet.circle.com)</span>
-        </a>
-        <p className="m-0 text-[13px] text-grey">On the faucet, choose the network &quot;Monad Testnet&quot; (it opens on another one), paste your address, and request USDC. The balance above updates by itself.</p>
+        <p className="m-0 text-[13px] text-grey">
+          Send USDC on Arc mainnet to this address from a wallet or exchange that supports Arc, or bridge it from another chain with Circle&apos;s
+          CCTP (
+          <a href="https://docs.arc.io/integrate/exchanges/cctp-bridging" target="_blank" rel="noreferrer" className="underline">
+            how<span className="sr-only"> (opens docs.arc.io)</span>
+          </a>
+          ). On Arc, USDC also pays gas: one balance covers both. Keep it small: deposits are capped at 2 USDC per licence here. The balance
+          above updates by itself.
+        </p>
       </section>
 
       <div className="flex flex-wrap gap-3">

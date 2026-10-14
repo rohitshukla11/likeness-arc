@@ -13,7 +13,7 @@ import { useGetWalletAccounts } from "@dynamic-labs-sdk/react-hooks";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { createWalletClient, http, type Account, type Address, type Chain, type Transport, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { monadTestnet } from "@/lib/chain";
+import { arcMainnet } from "@/lib/chain";
 import { useDynamicState } from "@/app/providers";
 
 export type ActiveWallet = {
@@ -40,7 +40,7 @@ export const useWallet = () => useContext(WalletCtx);
 const DEV_CHOICE = "likeness:dev-wallet";
 
 function devClient(w: DevWallet): ActiveWallet {
-  const client = createWalletClient({ account: w.key ? privateKeyToAccount(w.key) : w.address, chain: monadTestnet, transport: http() }) as WalletClient<Transport, Chain, Account>;
+  const client = createWalletClient({ account: w.key ? privateKeyToAccount(w.key) : w.address, chain: arcMainnet, transport: http() }) as WalletClient<Transport, Chain, Account>;
   return { kind: "dev", address: w.address, label: w.label, client, devSecret: w.devSecret };
 }
 

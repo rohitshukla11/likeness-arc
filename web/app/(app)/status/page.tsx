@@ -26,7 +26,7 @@ export default function Status() {
   return (
     <AppPage title="Status" description="What this server runs, and which credential turns each piece on.">
       <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Chain" value={isLocalFork() ? "Local fork" : "Monad testnet"} note={isLocalFork() ? "An anvil fork of Monad testnet" : "Chain ID 10143"} />
+        <StatCard label="Chain" value={isLocalFork() ? "Local fork" : "Arc mainnet"} note={isLocalFork() ? "An arc-anvil fork of Arc mainnet" : "Chain ID 5042"} />
         <StatCard label="History" value={historySource() === "envio" ? "Envio" : "RPC scan"} note={historySource() === "envio" ? "Envio indexer" : "RPC log scan"} />
         <StatCard label="Renderer" value={plan.test ? "Test" : "Live"} note={plan.test ? "DevRenderer (TEST RENDER)" : plan.primary} />
         <StatCard label="Integrations" value={`${on} of ${list.length}`} note="configured" />
@@ -56,7 +56,7 @@ export default function Status() {
       <Card id="contracts" title="For AI tools and verifiers">
         <p className="m-0 max-w-3xl text-[14px] text-grey">
           Likeness is a protocol; this app is its reference client. Any image tool can check a licence, pay per render and anchor a receipt through the
-          same four contracts on Monad, and anyone can check a file.
+          same four contracts on Arc, and anyone can check a file.
         </p>
         <ul className="m-0 grid list-none grid-cols-1 gap-[14px] p-0 sm:grid-cols-2">
           {CONTRACTS.flatMap((c) => {
@@ -68,7 +68,7 @@ export default function Status() {
                   <h3 className="m-0 text-[17px] font-semibold">{c.name}</h3>
                   <a href={explorer.address(a)} target="_blank" rel="noreferrer" className="tnum font-mono text-[13px] text-wait">
                     {a.slice(0, 8)}…{a.slice(-4)}
-                    <span className="sr-only"> (opens MonadVision)</span>
+                    <span className="sr-only"> (opens Arc Explorer)</span>
                   </a>
                 </div>
                 <p className="m-0 text-[14px] text-grey">{c.does}</p>

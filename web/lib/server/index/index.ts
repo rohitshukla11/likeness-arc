@@ -3,7 +3,7 @@ import "server-only";
  * Where protocol history comes from:
  *  - the Envio HyperIndex in indexer/, through ENVIO_GRAPHQL_URL (Hasura) or ENVIO_PG_URL (its
  *    Postgres, for a local run without Docker). The indexer itself syncs through HyperSync when
- *    ENVIO_API_TOKEN is set and through the Monad RPC otherwise;
+ *    ENVIO_API_TOKEN is set and through the Arc RPC otherwise;
  *  - when neither URL is set, or the indexer is unreachable, the cached RPC log scan in ./rpc.ts.
  * Every answer carries its source and the UI shows which one served it.
  */

@@ -1,15 +1,15 @@
 import "server-only";
 /**
  * Delegated access: the brand lets the render service send exactly one kind of transaction from its
- * wallet, LicenseEscrow.payRender on chain 10143, up to a total USDC cap the brand chose.
+ * wallet, LicenseEscrow.payRender on chain 5042, up to a total USDC cap the brand chose.
  *
  * Three layers enforce that, from outermost in:
- *  1. Dynamic signer policy (set by the brand's browser when delegating): chain id 10143 and an address
+ *  1. Dynamic signer policy (set by the brand's browser when delegating): chain id 5042 and an address
  *     allowlist (the protocol contracts and USDC). Dynamic's SDK states that `functionName`,
  *     `contractAbi` and `valueLimit.totalLimit` are not evaluated on signer layers, so we do not
  *     pretend they are.
  *  2. This module's guard, run before any delegated signature: destination is our escrow, chain is
- *     10143, value is 0, calldata decodes as payRender for a licence this brand holds, and the price
+ *     5042, value is 0, calldata decodes as payRender for a licence this brand holds, and the price
  *     fits under the remaining cap.
  *  3. The contract: payRender needs the licensee as sender and a render agent's signature, and pays
  *     at most the licence price from that licence's escrow.

@@ -1,6 +1,6 @@
 /**
  * Creator public profiles, sample renders, brand onboarding and visibility tiers, end to end on an anvil
- * fork of Monad testnet (the real deployed contracts). The creator's reference photos are real face
+ * fork of Arc mainnet (the real deployed contracts). The creator's reference photos are real face
  * images (the landing page's portrait, three variants); a photo of another person must be refused.
  * Samples use the DevRenderer (no model key in tests), so no model cost.
  */
@@ -24,7 +24,8 @@ import { releaseForSamples, sampleContext } from "@/lib/crypto/release";
 import { deployment } from "@/lib/deployment";
 import { hasAnvil, startFork, takeOverRoles, wallet, type Fork } from "@/lib/dev/fork";
 
-const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1";
+// Needs arc-anvil and the deployed contracts (lib/deployment.ts).
+const run = hasAnvil() && process.env.SKIP_FORK_TESTS !== "1" && !!deployment.CreatorRegistry;
 const facesAvailable = existsSync(path.resolve(process.cwd(), ".models/auraface_glintr100.onnx"));
 
 describe.skipIf(!run)("public profiles, samples and brands", () => {
@@ -51,7 +52,7 @@ describe.skipIf(!run)("public profiles, samples and brands", () => {
     const keyFile = path.join(tmp, "attester.key");
     (await import("node:fs")).writeFileSync(keyFile, attesterKey);
     Object.assign(process.env, {
-      MONAD_RPC_URL: fork.url,
+      ARC_RPC_URL: fork.url,
       DB_DIR: path.join(tmp, "db"),
       MEDIA_DIR: path.join(tmp, "media"),
       INDEX_CACHE_DIR: tmp,
@@ -85,7 +86,7 @@ describe.skipIf(!run)("public profiles, samples and brands", () => {
       adult: true,
     };
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
-    const sig = await signAttestation(attesterKey, deployment.CreatorRegistry!, 10143, creator, a, 0n, deadline);
+    const sig = await signAttestation(attesterKey, deployment.CreatorRegistry!, 5042, creator, a, 0n, deadline);
     const terms = { categories: (1 << 8) | (1 << 9), regions: 63, maxDuration: 30n * 86_400n, maxRenders: 100, pricePerRender: 2_000_000n, autoApprove: false };
     const hash = await wallet(fork, creatorKey).writeContract({ address: deployment.CreatorRegistry!, abi: CreatorRegistryAbi, functionName: "register", args: [creator, a, deadline, sig, terms] } as never);
     await fork.pub.waitForTransactionReceipt({ hash });

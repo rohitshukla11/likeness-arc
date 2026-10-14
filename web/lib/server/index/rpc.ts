@@ -1,7 +1,7 @@
 import "server-only";
 /**
  * The RPC fallback for the indexer: scans the four contracts' logs from the deployment block,
- * 100 blocks per eth_getLogs call (the public Monad testnet RPC's limit), and caches the decoded
+ * 9,999 blocks per eth_getLogs call (Arc's public endpoint allows 10,000), and caches the decoded
  * rows plus a cursor in STORE_DIR/../index-<chain>.json so later reads only fetch new blocks.
  * Current state (status, terms, balances) is always read from the contracts, never from this cache.
  */
@@ -16,9 +16,9 @@ import { pub, rpcUrl, singleton } from "../chain";
 import { fileGet, filePut, localDir } from "../files";
 import { emptyHistory, type History } from "./types";
 
-// Blocks per eth_getLogs (the public Monad RPC allows 100) and requests in flight. On Vercel the
-// outgoing IP is shared with other apps, so the public RPC's per-IP limit is hit sooner: ask less at once.
-const chunk = () => BigInt(process.env.INDEX_LOG_CHUNK ?? 100);
+// Blocks per eth_getLogs (Arc's public endpoint allows 10,000; about 85 minutes at 2 blocks/s) and
+// requests in flight. On Vercel the outgoing IP is shared with other apps, so the public RPC's per-IP limit is hit sooner: ask less at once.
+const chunk = () => BigInt(process.env.INDEX_LOG_CHUNK ?? 9_999);
 const concurrency = () => Number(process.env.INDEX_SCAN_CONCURRENCY ?? (process.env.VERCEL ? 2 : 8));
 const abi = [...CreatorRegistryAbi, ...LicenseRegistryAbi, ...LicenseEscrowAbi];
 
@@ -33,6 +33,7 @@ function cacheFile(): string {
 // fresh serverless instance does not rescan from the deployment block.
 const cachePaths = (name: string) => [`cache/${name}`, path.join(/*turbopackIgnore: true*/ localDir("INDEX_CACHE_DIR", ""), name)] as const;
 const SAVE_EVERY = 5 * 60_000;
+const HEAD_MARGIN = 2n;
 
 /** Milliseconds one call may spend scanning: 20 s on Vercel (a function has minutes, a page view less), unbounded locally. */
 const scanBudget = () => Number(process.env.INDEX_SCAN_BUDGET_MS ?? (process.env.VERCEL ? 20_000 : 0));
@@ -137,7 +138,9 @@ async function scan(h: History, file: string): Promise<History> {
   const client = pub();
   let head: bigint;
   try {
-    head = await client.getBlockNumber({ cacheTime: 0 });
+    // Arc's public endpoint is load-balanced: a backend a block or two behind answers -32014 for the
+    // newest blocks, so the scan stops just short of the reported head and picks them up next time.
+    head = (await client.getBlockNumber({ cacheTime: 0 })) - HEAD_MARGIN;
   } catch (e) {
     console.error(JSON.stringify({ service: "index", error: `head: ${(e as Error).message.split("\n")[0]}` }));
     return h;
@@ -173,7 +176,8 @@ async function scan(h: History, file: string): Promise<History> {
   if (to < from) return h;
   logs.sort((x, y) => Number(x.blockNumber! - y.blockNumber!) || Number(x.logIndex! - y.logIndex!));
 
-  // Monad's RPC returns blockTimestamp on each log; anything else falls back to the block header.
+  // Arc's RPC returns blockTimestamp on each log; anything else falls back to the block header.
+  // Arc timestamps are non-decreasing (blocks can share one), so rows are ordered by block and log index.
   const times = new Map<bigint, number>();
   for (const l of logs) {
     const ts = (l as Log & { blockTimestamp?: Hex | bigint }).blockTimestamp;

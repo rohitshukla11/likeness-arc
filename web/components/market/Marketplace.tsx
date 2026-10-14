@@ -120,7 +120,7 @@ export function Marketplace({ creators, source }: { creators: MarketCreator[]; s
   return (
     <AppPage
       title="Marketplace"
-      description="Verified creators on Monad testnet. Every licence is approved by the person in it."
+      description="Verified creators on Arc mainnet. Every licence is approved by the person in it."
       actions={
         <>
           <form role="search" onSubmit={(e) => e.preventDefault()} className="flex h-11 w-full max-w-full items-center sm:w-[380px] gap-2 rounded-[12px] border border-field bg-white px-3.5">

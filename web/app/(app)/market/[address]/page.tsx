@@ -43,7 +43,7 @@ export default async function CreatorPage({ params }: PageProps<"/market/[addres
           {verified && <VerifiedMark size={22} />}
         </span>
       }
-      description={verified ? `Verified ${fmtDay(c.verifiedAt)}${c.upgradedAt ? `, upgraded ${fmtDay(c.upgradedAt)}` : ""} · ${method === "passive" ? "passive" : "full"} liveness · Monad testnet` : "Creator on Monad testnet"}
+      description={verified ? `Verified ${fmtDay(c.verifiedAt)}${c.upgradedAt ? `, upgraded ${fmtDay(c.upgradedAt)}` : ""} · ${method === "passive" ? "passive" : "full"} liveness · Arc mainnet` : "Creator on Arc mainnet"}
       actions={
         <>
           <Link href="/market" className={btnClass("outline")}>
@@ -95,7 +95,7 @@ export default async function CreatorPage({ params }: PageProps<"/market/[addres
                   <dt className="text-grey">Wallet</dt>
                   <dd className="m-0">
                     <a href={explorer.address(c.address)} target="_blank" rel="noreferrer" className="font-semibold text-wait underline">
-                      MonadVision<span className="sr-only"> (opens in a new tab)</span>
+                      Arc Explorer<span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   </dd>
                 </dl>

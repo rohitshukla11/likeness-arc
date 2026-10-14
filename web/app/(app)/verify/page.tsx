@@ -171,7 +171,7 @@ function Verify() {
               ) : (
                 <>
                   <span className="text-[26px] font-bold leading-tight">{busy ? "Checking…" : "Ready when you are"}</span>
-                  <span className="text-[14px] text-grey">We hash the file, read its content credential, and look up its receipt on Monad. Nothing is stored.</span>
+                  <span className="text-[14px] text-grey">We hash the file, read its content credential, and look up its receipt on Arc. Nothing is stored.</span>
                 </>
               )}
             </div>
@@ -287,18 +287,18 @@ function Verify() {
                 <Check ok={!!result.receipt}>
                   {result.receipt ? (
                     <>
-                      Receipt recorded on Monad
+                      Receipt recorded on Arc
                       {result.receipt.tx && (
                         <>
                           {" "}
-                          <a href={`https://testnet.monadvision.com/tx/${result.receipt.tx}`} target="_blank" rel="noreferrer" className="text-lime underline-offset-2 hover:underline">
-                            view tx<span className="sr-only"> (opens MonadVision)</span>
+                          <a href={`https://explorer.arc.io/tx/${result.receipt.tx}`} target="_blank" rel="noreferrer" className="text-lime underline-offset-2 hover:underline">
+                            view tx<span className="sr-only"> (opens Arc Explorer)</span>
                           </a>
                         </>
                       )}
                     </>
                   ) : (
-                    "No receipt on Monad for these exact bytes"
+                    "No receipt on Arc for these exact bytes"
                   )}
                 </Check>
                 <Check ok={result.creator?.trust.level === "verified"}>
@@ -367,7 +367,7 @@ function Verify() {
 function subline(v: V): string {
   switch (v.verdict) {
     case "Licensed":
-      return "Made under an active licence the person in it approved, paid for and recorded on Monad.";
+      return "Made under an active licence the person in it approved, paid for and recorded on Arc.";
     case "Revoked":
       return "Licensed when it was made. The creator revoked the licence afterwards, so it should not be used in new placements.";
     case "Expired":

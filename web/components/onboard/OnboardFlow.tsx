@@ -3,7 +3,7 @@
 /**
  * Creator onboarding in three steps, under one progress bar:
  *   1. Sign in: email through Dynamic; the embedded wallet is created once the code is verified, and
- *      MON for gas is dripped in the background (nothing is shown unless that fails).
+ *      A little USDC for gas is topped up in the background (nothing is shown unless that fails).
  *   2. Verify it's you: one screen with the consent and "Agree and verify", which signs the consent
  *      with the wallet and starts the Didit session; the server reads Didit's decision.
  *   3. Protect your photos: three guided photos, each matched to the liveness selfie, then "Protect
@@ -28,7 +28,7 @@ import { createPublicClient, formatEther, http, type Hex } from "viem";
 import { CreatorRegistryAbi } from "@/lib/abi/CreatorRegistry";
 import { actionMessage } from "@/lib/auth";
 import { categoryLabels } from "@/lib/categories";
-import { explorer, monadTestnet } from "@/lib/chain";
+import { explorer, arcMainnet } from "@/lib/chain";
 import { api, reason, write } from "@/lib/client/tx";
 import { CONSENT_POINTS, CONSENT_VERSION, DIDIT_LINKS, consentTextHash } from "@/lib/consent";
 import { referenceSetHash, sealReferenceSet, sha256Hex, type ReferenceSet } from "@/lib/crypto/envelope";
@@ -47,7 +47,7 @@ import { Note, Tx, fmtDate, inputClass, shortAddr } from "@/components/ui";
 import { useWallet, type ActiveWallet } from "@/components/wallet/WalletProvider";
 import { CaptureStep, type PhotoState } from "./CaptureStep";
 
-const pub = createPublicClient({ chain: monadTestnet, transport: http() });
+const pub = createPublicClient({ chain: arcMainnet, transport: http() });
 
 /** Set when this tab registers the wallet, so a refresh of the done screen stays on it. */
 const DONE_KEY = "likeness:onboard:done";
@@ -134,7 +134,7 @@ export function OnboardFlow() {
     if (wallet && registered === true && !done) router.replace("/dashboard");
   }, [wallet, registered, done, router]);
 
-  // A new, empty wallet gets MON for gas in the background, once, with the drip's own limits.
+  // A new, empty wallet gets a little USDC for gas in the background, once, with the drip's own limits.
   const drip = useCallback(
     async (address: `0x${string}`) => {
       setDripError(null);
@@ -225,16 +225,16 @@ export function OnboardFlow() {
             {wallet ? (
               <a href={explorer.address(wallet.address)} target="_blank" rel="noreferrer">
                 {wallet.address}
-                <span className="sr-only"> (opens MonadVision)</span>
+                <span className="sr-only"> (opens Arc Explorer)</span>
               </a>
             ) : (
               "not signed in"
             )}
           </dd>
           <dt className="text-grey">Network</dt>
-          <dd className="m-0">Monad testnet (10143)</dd>
-          <dt className="text-grey">MON balance</dt>
-          <dd className="tnum m-0">{facts.balance ? `${facts.balance} MON` : "—"}</dd>
+          <dd className="m-0">Arc mainnet (5042)</dd>
+          <dt className="text-grey">USDC balance (gas)</dt>
+          <dd className="tnum m-0">{facts.balance ? `${facts.balance} USDC` : "—"}</dd>
           <dt className="text-grey">Gas drip</dt>
           <dd className="m-0">{facts.dripTx ? <Tx hash={facts.dripTx} /> : dripError ? `failed: ${dripError}` : "—"}</dd>
           <dt className="text-grey">Passkey key fingerprint</dt>
@@ -315,7 +315,7 @@ export function SignIn() {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="m-0 text-[18px] font-bold">Sign in with your email</h2>
-      <p className="m-0 max-w-2xl text-[15px] text-grey">We create your wallet on Monad as you sign in. No seed phrase, no extension.</p>
+      <p className="m-0 max-w-2xl text-[15px] text-grey">We create your wallet on Arc as you sign in. No seed phrase, no extension.</p>
       {!user.data && !otp && (
         <form
           className="flex flex-wrap gap-3"
@@ -664,7 +664,7 @@ function ProtectStep({ wallet, note, onRegistered }: { wallet: ActiveWallet; not
         shots.forEach((s) => s?.fill(0));
         setShots([null, null, null]);
       }
-      say("Registering you on Monad…");
+      say("Registering you on Arc…");
       const a = await api<{ attestation: Record<string, unknown> & { verifiedAt: string }; deadline: string; signature: Hex; provider: string; liveness: string; level: string }>("/api/attest", {
         method: "POST",
         body: JSON.stringify({ address: wallet.address, referenceSet: sealed.current }),
@@ -692,7 +692,7 @@ function ProtectStep({ wallet, note, onRegistered }: { wallet: ActiveWallet; not
         setMatchError("Your photo check has expired. Take the three photos again; it only takes a moment.");
         return;
       }
-      setError(/insufficient funds|exceeds the balance/i.test(text) ? "Your wallet has no MON for gas yet. Use Retry under this card, then try again." : text);
+      setError(/insufficient funds|exceeds the balance/i.test(text) ? "Your wallet has no USDC for gas yet. Use Retry under this card, then try again." : text);
     } finally {
       setBusy(false);
     }

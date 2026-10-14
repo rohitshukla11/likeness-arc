@@ -107,9 +107,6 @@ function Hero() {
       </div>
 
       <div className="relative mx-auto flex max-w-[1180px] flex-wrap items-center justify-center gap-x-[clamp(24px,4.4vw,64px)] gap-y-3 px-4 pb-8 pt-12 text-[clamp(15px,1.4vw,18px)] font-semibold text-[#5F636B] sm:px-8">
-        <span className="flex w-full justify-center">
-          <span className="inline-flex items-center rounded-full bg-violet px-3 py-1 text-[12px] font-semibold tracking-[0.01em] text-white">Winner · Monad Blitz Pune V3</span>
-        </span>
         <span className="text-[13px] font-medium text-[#5F636B]">Built on</span>
         {BUILT_ON.map((b) => (
           <span key={b}>{b}</span>
@@ -132,7 +129,7 @@ function Toggle() {
 
 function Stats() {
   const { ref, seen } = useInView<HTMLDivElement>();
-  const ms = useCountUp(MEASUREMENTS.registerMs.value, seen);
+  const ms = useCountUp(MEASUREMENTS.registerMs.value ?? 0, seen);
   const pct = useCountUp(MEASUREMENTS.rendersWithReceipt.value, seen);
   return (
     <section className="on-dark bg-ink text-white">
@@ -169,11 +166,13 @@ function Stats() {
             </p>
           </article>
           <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-5">
-            <article className={`rv${seen ? " in" : ""} flex flex-1 flex-col gap-1.5 rounded-[30px] bg-lime bg-[url(/landing/card-lime.png)] bg-cover bg-center p-7 text-ink`} style={{ transitionDelay: ".25s" }} title={MEASUREMENTS.registerMs.source}>
-              <span className="tnum font-display text-[clamp(40px,5vw,52px)] font-black leading-none">{ms} MS</span>
-              <span className="font-display text-[17px] font-bold leading-snug">TO REGISTER A CREATOR ON MONAD</span>
-              <span className="text-[13px] text-[#3E4148]">Measured on Monad testnet, send to receipt.</span>
-            </article>
+            {MEASUREMENTS.registerMs.value !== null && (
+              <article className={`rv${seen ? " in" : ""} flex flex-1 flex-col gap-1.5 rounded-[30px] bg-lime bg-[url(/landing/card-lime.png)] bg-cover bg-center p-7 text-ink`} style={{ transitionDelay: ".25s" }} title={MEASUREMENTS.registerMs.source}>
+                <span className="tnum font-display text-[clamp(40px,5vw,52px)] font-black leading-none">{ms} MS</span>
+                <span className="font-display text-[17px] font-bold leading-snug">TO REGISTER A CREATOR ON ARC</span>
+                <span className="text-[13px] text-[#3E4148]">Measured on Arc mainnet, send to receipt.</span>
+              </article>
+            )}
             <article className={`rv${seen ? " in" : ""} flex flex-1 flex-col gap-1.5 rounded-[30px] bg-ink-line p-7 text-white`} style={{ transitionDelay: ".4s" }} title={MEASUREMENTS.rendersWithReceipt.source}>
               <span className="tnum font-display text-[clamp(40px,5vw,52px)] font-black leading-none text-lime">{pct}%</span>
               <span className="font-display text-[17px] font-bold leading-snug">OF RENDERS CARRY A RECEIPT</span>
@@ -192,7 +191,7 @@ const STEPS = [
   { title: "PROVE IT'S YOU", body: "An ID check for 18+, a liveness selfie, and three guided photos matched to it. The verification session is deleted once you're attested." },
   { title: "SET YOUR TERMS", body: "Pick uses, regions, a price per render and a cap. Political, adult, minor-involving, impersonating and deceptive uses are banned in the contract." },
   { title: "APPROVE BRANDS", body: "A brand requests a licence and you approve it. Your photos are released to that licence only, unlocked with your passkey (Face ID or Touch ID)." },
-  { title: "GET PAID, OR REVOKE", body: "Each render pays you and records a receipt in one Monad transaction. Revoke and the next render is refused." },
+  { title: "GET PAID, OR REVOKE", body: "Each render pays you and records a receipt in one Arc transaction. Revoke and the next render is refused." },
 ];
 
 function HowItWorks() {

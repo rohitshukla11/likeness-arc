@@ -8,7 +8,7 @@ const display = Unbounded({ subsets: ["latin"], weight: ["700", "800", "900"], v
 const body = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body-face", display: "swap" });
 
 const TAGLINE = "License your face to AI. Your terms, paid per image.";
-const DESCRIPTION = `${TAGLINE} Verified creators set the terms, brands pay per render from USDC escrow, and either side can revoke. Testnet demo on Monad.`;
+const DESCRIPTION = `${TAGLINE} Verified creators set the terms, brands pay per render from USDC escrow, and either side can revoke. Live on Arc mainnet with small amounts.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://likeness.site"),

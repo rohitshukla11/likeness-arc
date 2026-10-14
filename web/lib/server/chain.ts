@@ -1,22 +1,22 @@
 import "server-only";
 /**
  * Server-side chain access. The RPC is read at call time, so a test or the local demo can point the
- * whole server at an anvil fork of Monad testnet (MONAD_RPC_URL) without touching the browser config.
+ * whole server at an arc-anvil fork of Arc mainnet (ARC_RPC_URL) without touching the browser config.
  */
 import { createPublicClient, defineChain, http, type PublicClient } from "viem";
-import { monadTestnet } from "@/lib/chain";
+import { arcMainnet } from "@/lib/chain";
 
 export function rpcUrl(): string {
-  return process.env.MONAD_RPC_URL || process.env.NEXT_PUBLIC_MONAD_RPC_URL || "https://testnet-rpc.monad.xyz";
+  return process.env.ARC_RPC_URL || process.env.NEXT_PUBLIC_ARC_RPC_URL || "https://rpc.mainnet.arc.io";
 }
 
-/** True when the server is pointed at a local fork rather than the public testnet. */
+/** True when the server is pointed at a local fork rather than Arc mainnet. */
 export function isLocalFork(): boolean {
   return /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(rpcUrl());
 }
 
 export function serverChain() {
-  return defineChain({ ...monadTestnet, rpcUrls: { default: { http: [rpcUrl()] } } });
+  return defineChain({ ...arcMainnet, rpcUrls: { default: { http: [rpcUrl()] } } });
 }
 
 const clients = new Map<string, PublicClient>();
@@ -24,8 +24,8 @@ export function pub(): PublicClient {
   const url = rpcUrl();
   let c = clients.get(url);
   if (!c) {
-    // Contract reads issued together go out as one Multicall3 call, and retries back off: the public
-    // Monad RPC allows about 15 requests a second.
+    // Contract reads issued together go out as one Multicall3 call, and retries back off. Arc's public
+    // endpoint is load-balanced, and a backend slightly behind the head answers -32014; a retry fixes it.
     c = createPublicClient({
       chain: serverChain(),
       batch: { multicall: { wait: 16 } },
@@ -36,7 +36,7 @@ export function pub(): PublicClient {
   return c;
 }
 
-/** Monad charges the gas limit, not gas used: estimate, then add a small margin. */
+/** Gas estimate plus a small margin, so a transaction doesn't run out if state moves before it lands. */
 export const withMargin = (gas: bigint) => (gas * 115n) / 100n;
 
 /**

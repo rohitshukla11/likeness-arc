@@ -87,7 +87,7 @@ export function Tx({ hash, ms }: { hash: string; ms?: number }) {
   return (
     <a className="font-mono text-[13px] text-wait underline-offset-2 hover:underline" href={explorer.tx(hash)} target="_blank" rel="noreferrer">
       {hash.slice(0, 10)}…{hash.slice(-6)}
-      <span className="sr-only"> (opens MonadVision)</span>
+      <span className="sr-only"> (opens Arc Explorer)</span>
       {ms !== undefined && <span className="text-grey"> · confirmed in {ms} ms</span>}
     </a>
   );
@@ -102,7 +102,7 @@ export function Addr({ a, href }: { a: string; href?: string }) {
   ) : (
     <a href={explorer.address(a)} target="_blank" rel="noreferrer" className="tnum font-mono underline-offset-2 hover:underline">
       {short}
-      <span className="sr-only"> (opens MonadVision)</span>
+      <span className="sr-only"> (opens Arc Explorer)</span>
     </a>
   );
 }

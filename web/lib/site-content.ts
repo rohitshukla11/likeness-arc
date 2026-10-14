@@ -4,10 +4,13 @@
  */
 
 export const MEASUREMENTS = {
-  /** CreatorRegistry.register on Monad testnet, send to receipt over the public RPC. */
+  /**
+   * CreatorRegistry.register on Arc mainnet, send to receipt over the public RPC. Null until it has been
+   * measured on this deployment: the card is not shown without a real number.
+   */
   registerMs: {
-    value: 853,
-    source: "CreatorRegistry.register on Monad testnet, 2026-10-06 (pnpm seed), send to receipt over the public RPC",
+    value: null as number | null,
+    source: "CreatorRegistry.register on Arc mainnet, send to receipt over the public RPC (not measured yet)",
   },
   /** By construction: payRender anchors the receipt in the same transaction, and files are released only after it. */
   rendersWithReceipt: {
@@ -21,4 +24,4 @@ export type Testimonial = { quote: string; name: string; role: string };
 /** Real, attributed quotes only. Leave empty until there are some: the section is then not rendered. */
 export const TESTIMONIALS: Testimonial[] = [];
 
-export const BUILT_ON = ["Monad", "Dynamic", "Didit", "Mera", "Envio", "Gemini", "C2PA"];
+export const BUILT_ON = ["Arc", "Circle USDC", "Dynamic", "Didit", "Mera", "Gemini", "C2PA"];
