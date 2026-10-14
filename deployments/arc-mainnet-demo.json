@@ -1,0 +1,121 @@
+{
+  "site": "https://likenesss.vercel.app",
+  "creator": "0x21c15dcAd72106675DC4D0A5c87c800059F80110",
+  "brand": "0xd26153C78c51164c873807C90AD4b3dffc1Cc183",
+  "deployer": "0x68343Aa0598b7FCAA102769D172e59cdDfae10f2",
+  "licenceId": "1",
+  "render": {
+    "assetHash": "0x565f924b94dbe854c0748b2b3da4c38bbbf66ea930b362bbbebcd7a8840b430d",
+    "mime": "image/jpeg",
+    "model": "gemini-nano-banana-2.1",
+    "test": false,
+    "saved": "demo-renders/arc-render-0.jpg"
+  },
+  "verifyAfterRender": {
+    "local": {
+      "verdict": "Licensed",
+      "headline": "Licensed. Made under licence #1 on 2026-10-14, and the licence is still in force."
+    },
+    "live": {
+      "verdict": "Licensed",
+      "headline": "Licensed. Made under licence #1 on 2026-10-14, and the licence is still in force."
+    }
+  },
+  "secondRender": "GenerateError 409: render refused (Licence active: Revoked)",
+  "verifyAfterRevoke": {
+    "local": {
+      "verdict": "Revoked",
+      "headline": "Revoked. Licensed when made (2026-10-14), since revoked on 2026-10-14."
+    },
+    "live": {
+      "verdict": "Revoked",
+      "headline": "Revoked. Licensed when made (2026-10-14), since revoked on 2026-10-14."
+    }
+  },
+  "moneyCheck": {
+    "creatorReceived": "0.09",
+    "treasuryReceived": "0.01",
+    "brandRefunded": "0.1",
+    "final": {
+      "deployer": "1.44576684108823255",
+      "creator": "0.113892079647878412",
+      "brand": "0.135642159172270524"
+    }
+  },
+  "transactions": [
+    {
+      "step": "fund Demo Creator 0.03",
+      "from": "deployer 0x6834",
+      "hash": "0x6bee91646bb1aa8947d21fd48829d816112d211816f170bf1a0f6cb13d879c3c",
+      "gasUsed": "21000",
+      "feeUsdc": "0.000420000024213",
+      "sendToReceiptMs": 1298,
+      "valueUsdc": "0.03"
+    },
+    {
+      "step": "fund Brew & Co. 0.25",
+      "from": "deployer 0x6834",
+      "hash": "0x86dd8bbbc239745f7d0927ebe406e602c6fb004e3dd8e73ad21cf2554a27a295",
+      "gasUsed": "21000",
+      "feeUsdc": "0.000420000024213",
+      "sendToReceiptMs": 901,
+      "valueUsdc": "0.25"
+    },
+    {
+      "step": "CreatorRegistry.register",
+      "from": "Demo Creator",
+      "hash": "0x57d4df995dc8335f587d7c9ae1b8f27813600ed78b45a0758d1148253eb2539c",
+      "gasUsed": "266624",
+      "feeUsdc": "0.005332480307417472",
+      "sendToReceiptMs": 1232
+    },
+    {
+      "step": "LicenseRegistry.request (issue)",
+      "from": "Brew & Co.",
+      "hash": "0x32fbc8f46066cdc920cfd1cd3f2ec33556d07bba8472cee7289316125907bdcd",
+      "gasUsed": "253482",
+      "feeUsdc": "0.005069640292264746",
+      "sendToReceiptMs": 897
+    },
+    {
+      "step": "USDC.approve(escrow, 0.20)",
+      "from": "Brew & Co.",
+      "hash": "0x7de8db5baf699028ee14234b5ffe34210aab88d6123ee2ce1f97add4fab8fb59",
+      "gasUsed": "55438",
+      "feeUsdc": "0.001108760063920014",
+      "sendToReceiptMs": 1243
+    },
+    {
+      "step": "LicenseEscrow.deposit(0.20)",
+      "from": "Brew & Co.",
+      "hash": "0x4b7f6f0b0ca16d9b7e5de62f659b6a9c2db62f039d99c5492cdd5f3413208ec7",
+      "gasUsed": "101430",
+      "feeUsdc": "0.00202860011694879",
+      "sendToReceiptMs": 1479
+    },
+    {
+      "step": "LicenseEscrow.payRender",
+      "from": "Brew & Co.",
+      "hash": "0xeada70991587ee265a004592db889d5861763dfcdb79afd72af9fbf4a8697652",
+      "gasUsed": "228214",
+      "feeUsdc": "0.004564280263130742",
+      "sendToReceiptMs": 1241
+    },
+    {
+      "step": "LicenseRegistry.revoke",
+      "from": "Demo Creator",
+      "hash": "0x7d0bc56950da0264cb8722e4a479cb10afdde7724fe1641480caedb62edf53f0",
+      "gasUsed": "38772",
+      "feeUsdc": "0.000775440044704116",
+      "sendToReceiptMs": 1245
+    },
+    {
+      "step": "LicenseEscrow.refund",
+      "from": "Brew & Co.",
+      "hash": "0x3e00e199345afa412cc6160443eeb21ff7c910ea7a0a4f221bd585e1378b8689",
+      "gasUsed": "79328",
+      "feeUsdc": "0.001586560091465184",
+      "sendToReceiptMs": 941
+    }
+  ]
+}

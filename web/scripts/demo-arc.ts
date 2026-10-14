@@ -304,10 +304,10 @@ async function run() {
     await generate({ licenceId, licensee: brand.address, prompt: PROMPT, mode: "wallet" });
     throw new Error("a second render after revocation was NOT refused");
   } catch (e) {
-    const err = e as Error & { detail?: { checks?: { name: string; ok: boolean; detail: string }[] } };
+    const err = e as Error & { status?: number; details?: { checks?: { name: string; ok: boolean; detail: string }[] } };
     if (/NOT refused/.test(err.message)) throw err;
-    const failed = (err.detail?.checks ?? []).filter((x) => !x.ok).map((x) => `${x.name}: ${x.detail}`);
-    refused = `${err.message}${failed.length ? ` (${failed.join("; ")})` : ""}`;
+    const failed = (err.details?.checks ?? []).filter((x) => !x.ok).map((x) => `${x.name}: ${x.detail}`);
+    refused = `${err.constructor.name} ${err.status ?? ""}: ${err.message}${failed.length ? ` (${failed.join("; ")})` : ""}`;
   }
   out.secondRender = refused;
   console.log(`second render refused: ${refused}`);

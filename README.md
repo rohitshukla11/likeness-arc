@@ -4,6 +4,8 @@
 
 **License your face to AI. Your terms, paid per image.**
 
+> Unaudited contracts; this mainnet deployment uses deliberately small prices and caps.
+
 **Live app:** [likenesss.vercel.app](https://likenesss.vercel.app) (Arc mainnet) ·
 **Code:** [github.com/rohitshukla11/likeness-arc](https://github.com/rohitshukla11/likeness-arc) ·
 **Contracts:** [below](#contracts-on-arc-mainnet), verified on Sourcify
@@ -63,9 +65,12 @@ recorded together, before the file reaches the brand.
 - **Deterministic finality.** Arc finalises a transaction on inclusion
   ([docs](https://docs.arc.io/arc/concepts/deterministic-finality)), so a render's payment and receipt
   are final before the file is delivered, and a revocation binds the very next render.
-- **Measured on this deployment** (send to receipt over Arc's public RPC, 2026-10-14): the eight
-  deployment transactions confirmed in **1,215–1,795 ms** each, and cost **0.164571 USDC**
-  in gas together; wiring calls cost under 0.001 USDC each.
+- **Measured on this deployment** (send to receipt over Arc's public RPC, 2026-10-14):
+  - the [live flow](#live-flow-on-arc-mainnet): 9 transactions confirmed in **897–1,479 ms** each;
+    `payRender` (pay the creator, take the fee, anchor the receipt) took **1,241 ms** and
+    **228,214 gas, 0.004564 USDC**; the whole flow cost **0.021306 USDC** in gas;
+  - the eight deployment transactions confirmed in **1,215–1,795 ms** each and cost **0.164571 USDC** in
+    gas together.
 
 ## Traction
 
@@ -101,6 +106,38 @@ Roles: attester `0x7e001C6c704fa2C90ab47C2d2df921902B64527F`; render agent
 | [`LicenseRegistry`](contracts/src/LicenseRegistry.sol) | Non-transferable, expiring licences (ERC-721 locked per [ERC-5192](https://eips.ethereum.org/EIPS/eip-5192)) | Brand requests with the creator's EIP-712 approval, or inside auto-approve terms; creator revokes; only the escrow counts renders |
 | [`LicenseEscrow`](contracts/src/LicenseEscrow.sol) | USDC per licence; pays the creator per render, refunds the rest | Brand deposits; a render needs the brand's wallet **and** a render agent's signature |
 | [`ReceiptAnchor`](contracts/src/ReceiptAnchor.sol) | One receipt per rendered file, looked up by its sha256 | Only the escrow, only inside a paid render |
+
+## Live flow on Arc mainnet
+
+End-to-end flow run with scripted demo wallets: a synthetic, non-real face attested by our attester without
+an ID check, not listed in the marketplace. Real creator onboarding (Didit ID and liveness, passkey
+encryption) is available on the live site.
+
+Demo Creator `0x21c15dcAd72106675DC4D0A5c87c800059F80110` (shown as "Demo (scripted, no ID check)") and the fictional brand
+Brew & Co. `0xd26153C78c51164c873807C90AD4b3dffc1Cc183`, licence #1: Advertising, 0.10 USDC per render, 2 renders, 7 days.
+The script is [`web/scripts/demo-arc.ts`](web/scripts/demo-arc.ts) (the app's own server modules and the live
+site's API); the record is [`deployments/arc-mainnet-demo.json`](deployments/arc-mainnet-demo.json).
+
+| # | Step | From | Tx | Gas | Fee (USDC) | Send to receipt |
+|---|---|---|---|---:|---:|---:|
+| 1 | fund Demo Creator 0.03 | deployer 0x6834 | [`0x6bee9164…`](https://explorer.arc.io/tx/0x6bee91646bb1aa8947d21fd48829d816112d211816f170bf1a0f6cb13d879c3c) | 21,000 | 0.000420 | 1,298 ms |
+| 2 | fund Brew & Co. 0.25 | deployer 0x6834 | [`0x86dd8bbb…`](https://explorer.arc.io/tx/0x86dd8bbbc239745f7d0927ebe406e602c6fb004e3dd8e73ad21cf2554a27a295) | 21,000 | 0.000420 | 901 ms |
+| 3 | CreatorRegistry.register | Demo Creator | [`0x57d4df99…`](https://explorer.arc.io/tx/0x57d4df995dc8335f587d7c9ae1b8f27813600ed78b45a0758d1148253eb2539c) | 266,624 | 0.005332 | 1,232 ms |
+| 4 | LicenseRegistry.request (issue) | Brew & Co. | [`0x32fbc8f4…`](https://explorer.arc.io/tx/0x32fbc8f46066cdc920cfd1cd3f2ec33556d07bba8472cee7289316125907bdcd) | 253,482 | 0.005070 | 897 ms |
+| 5 | USDC.approve(escrow, 0.20) | Brew & Co. | [`0x7de8db5b…`](https://explorer.arc.io/tx/0x7de8db5baf699028ee14234b5ffe34210aab88d6123ee2ce1f97add4fab8fb59) | 55,438 | 0.001109 | 1,243 ms |
+| 6 | LicenseEscrow.deposit(0.20) | Brew & Co. | [`0x4b7f6f0b…`](https://explorer.arc.io/tx/0x4b7f6f0b0ca16d9b7e5de62f659b6a9c2db62f039d99c5492cdd5f3413208ec7) | 101,430 | 0.002029 | 1,479 ms |
+| 7 | LicenseEscrow.payRender | Brew & Co. | [`0xeada7099…`](https://explorer.arc.io/tx/0xeada70991587ee265a004592db889d5861763dfcdb79afd72af9fbf4a8697652) | 228,214 | 0.004564 | 1,241 ms |
+| 8 | LicenseRegistry.revoke | Demo Creator | [`0x7d0bc569…`](https://explorer.arc.io/tx/0x7d0bc56950da0264cb8722e4a479cb10afdde7724fe1641480caedb62edf53f0) | 38,772 | 0.000775 | 1,245 ms |
+| 9 | LicenseEscrow.refund | Brew & Co. | [`0x3e00e199…`](https://explorer.arc.io/tx/0x3e00e199345afa412cc6160443eeb21ff7c910ea7a0a4f221bd585e1378b8689) | 79,328 | 0.001587 | 941 ms |
+
+- **Render:** one Gemini render with a C2PA manifest and a render-agent signature, paid by `payRender` from
+  the brand's wallet: [`demo-renders/arc-render-0.jpg`](demo-renders/arc-render-0.jpg).
+- **Verify** (on the live site and locally): **Licensed**, with the creator, the licensee and the receipt;
+  after the revocation, **"Revoked. Licensed when made (2026-10-14), since revoked on 2026-10-14."**
+- **Second render after the revocation:** refused (`GenerateError 409: render refused`, failing check
+  "Licence active: Revoked").
+- **Money, checked on chain:** the creator received **0.09 USDC**, the treasury
+  `0x6834…10f2` **0.01 USDC**, and the brand got **0.1 USDC** back.
 
 ## Architecture
 
