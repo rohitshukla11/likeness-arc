@@ -40,3 +40,4 @@ docs/*
 !docs/dynamic.md
 !docs/mera.md
 .vercel
+!docs/deploy-vercel.md
