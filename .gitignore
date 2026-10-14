@@ -41,3 +41,4 @@ docs/*
 !docs/mera.md
 .vercel
 !docs/deploy-vercel.md
+web/.data-demo/
