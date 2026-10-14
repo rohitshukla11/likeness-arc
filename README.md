@@ -4,8 +4,6 @@
 
 **License your face to AI. Your terms, paid per image.**
 
-> **Live on Arc mainnet.** Unaudited contracts; this mainnet deployment uses deliberately small prices and caps.
-
 **Live app:** [likenesss.vercel.app](https://likenesss.vercel.app) (Arc mainnet) ·
 **Code:** [github.com/rohitshukla11/likeness-arc](https://github.com/rohitshukla11/likeness-arc) ·
 **Contracts:** [below](#contracts-on-arc-mainnet), verified on Sourcify
@@ -71,11 +69,6 @@ recorded together, before the file reaches the brand.
 
 ## Traction
 
-- 🏆 **Winner, Monad Blitz Pune V3** (10 Oct 2026), with an early prototype.
-- Earlier versions were built for Monad Metropolis and Colosseum; this Arc mainnet edition is a hackathon
-  continuation of that work: verified onboarding, passkey encryption, licences with USDC escrow, real AI
-  renders with content credentials, a public verifier, revocation and refunds, plus creator and brand
-  profiles with sample renders.
 - We've spoken with creators and brands directly. Creators described the hustle of shoots (travel, long
   days, reshoots) for a one-time fee; brands described delayed content, slipping shoot dates and the
   effort of recreating an ad for every new variation.
@@ -87,8 +80,7 @@ Deployed 2026-10-14 (UTC) on Arc mainnet (chain 5042) from
 block 25,968,293. All four contracts are **exact matches on Sourcify** (chain 5042).
 Machine-readable: [`deployments/arc-mainnet.json`](deployments/arc-mainnet.json).
 
-**Unaudited contracts; this mainnet deployment uses deliberately small prices and caps:** creator terms
-default to 0.10 USDC per render for 10 renders over 7 days, deposits are capped at 2 USDC per licence (in
+Creator terms default to 0.10 USDC per render for 10 renders over 7 days, deposits are capped at 2 USDC per licence (in
 the app), and the site renders at most 20 Gemini images a day.
 
 | Contract | Address | Deploy tx |
@@ -109,52 +101,6 @@ Roles: attester `0x7e001C6c704fa2C90ab47C2d2df921902B64527F`; render agent
 | [`LicenseRegistry`](contracts/src/LicenseRegistry.sol) | Non-transferable, expiring licences (ERC-721 locked per [ERC-5192](https://eips.ethereum.org/EIPS/eip-5192)) | Brand requests with the creator's EIP-712 approval, or inside auto-approve terms; creator revokes; only the escrow counts renders |
 | [`LicenseEscrow`](contracts/src/LicenseEscrow.sol) | USDC per licence; pays the creator per render, refunds the rest | Brand deposits; a render needs the brand's wallet **and** a render agent's signature |
 | [`ReceiptAnchor`](contracts/src/ReceiptAnchor.sol) | One receipt per rendered file, looked up by its sha256 | Only the escrow, only inside a paid render |
-
-### Live transactions
-
-Deployment and wiring:
-
-| Step | Tx | Gas | Fee (USDC) | Send to receipt |
-|---|---|---:|---:|---:|
-| fund drip 0.10 USDC | [`0x9aea96a8…`](https://explorer.arc.io/tx/0x9aea96a80d8bd58bffade4d4c73238797c6403cf2a657b7e5127a1ec53e6e784) | 21,000 | 0.000420 | 1,286 ms |
-| deploy CreatorRegistry | [`0x4203de7a…`](https://explorer.arc.io/tx/0x4203de7a70718bd757b7ba71489c116c83e49167545f7984b7a999369629ed81) | 2,132,727 | 0.042655 | 1,775 ms |
-| deploy LicenseRegistry | [`0xc3fd6e90…`](https://explorer.arc.io/tx/0xc3fd6e90487b0a9694deda4f5f88c357f76f34c11b6eb4310409eb29ad8429fb) | 3,126,399 | 0.062528 | 1,795 ms |
-| deploy ReceiptAnchor | [`0x151b54dc…`](https://explorer.arc.io/tx/0x151b54dc1302e8e54999e728ca23ab40445e2bdf7def614d8a6c4d912f9709db) | 567,193 | 0.011344 | 1,385 ms |
-| deploy LicenseEscrow | [`0x96221eea…`](https://explorer.arc.io/tx/0x96221eea18e7f4d87165211dbcbc2573308b728753e0c03d01ad8198338721a2) | 2,238,585 | 0.044772 | 1,769 ms |
-| LicenseRegistry.setEscrow | [`0x433f68ed…`](https://explorer.arc.io/tx/0x433f68ed59bb79ee3be4d94f3be28d1c8e64d602d78b470c0dce49caceaffb98) | 47,450 | 0.000949 | 1,242 ms |
-| ReceiptAnchor.setEscrow | [`0xd943f500…`](https://explorer.arc.io/tx/0xd943f50068bb69bcc763ba06552596f51fd58559150c3c7ad80f52c97b2e26fe) | 47,323 | 0.000946 | 1,585 ms |
-| LicenseEscrow.setRenderAgent | [`0xd6a4e307…`](https://explorer.arc.io/tx/0xd6a4e307730645f0d97d32764c6d4abfa0b8af3d181075e0d370dd6b8365a327) | 47,860 | 0.000957 | 1,215 ms |
-
-The live flow (creator onboarding, licence, deposit, render, verify) is listed here once it has run on
-the live app: <LIVE_FLOW_TXS>
-
-## Sponsor integrations
-
-- **Circle USDC on Arc:** the escrow holds and pays Circle's USDC through its ERC-20 interface, and the
-  same USDC pays gas.
-- **Dynamic:** email sign-in and an embedded wallet for every creator and brand, with Arc mainnet as a
-  custom EVM network. Delegated access is **off** on this deployment (it is sandbox-only without an
-  Enterprise plan): brands confirm each `payRender` in their own wallet.
-- **Mera** ([write-up: docs/mera.md](docs/mera.md)): passkey PRF output as encryption key material, never
-  as a wallet. See below.
-- **Envio:** [`indexer/`](indexer) is an Envio HyperIndex for all four contracts on Arc. It is not hosted
-  for the live app: there, history comes from the contracts' logs over Arc's RPC.
-
-## Mera: One Passkey, Many Keys
-
-Likeness uses Mera's WebAuthn PRF output to encrypt a person's face, not to sign in or hold funds (the
-wallet is Dynamic's). Each purpose has its own PRF salt namespace, and each key comes from HKDF-SHA256
-under its own label:
-
-- **`likeness:reference`** derives the key that wraps the creator's photo data key (AES-256-GCM,
-  non-extractable). The photos are sealed in the browser; the server stores only ciphertext.
-- **`likeness:licence:<id>`** derives a separate key per licence, used when the creator releases their
-  photos to the render service for that licence.
-
-**Cross-device key test** (Become a creator → Details): the same passkey in another browser shows the
-same key fingerprint and decrypts the same stored note; the panel shows the server holds only
-ciphertext (size and hash). Photos are decrypted on the server in memory for one render and dropped;
-there is no TEE yet. Full details and limits: [docs/mera.md](docs/mera.md).
 
 ## Architecture
 
@@ -256,25 +202,6 @@ flowchart LR
 - **Every output is marked:** a C2PA manifest declaring it AI-generated, Google's SynthID watermark, and
   an on-chain receipt keyed by its exact bytes.
 
-## Known limitations
-
-- **Unaudited contracts**, deployed to mainnet with deliberately small prices and caps. The 2 USDC
-  per-licence deposit cap is enforced by the app, not the contract.
-- **Didit level.** The live app runs `VERIFICATION_LEVEL=free`: passive liveness, with the reference
-  photos matched on our server. It resists deepfakes and camera injection less well than `full` (active
-  liveness and Didit's 1:1 match). The level is recorded on chain and shown.
-- **Test C2PA certificate.** Manifests are signed with a locally generated certificate that is not on the
-  C2PA trust list; the verifier says so.
-- **Dynamic delegated access is off** on this deployment; brands confirm each `payRender` in their wallet.
-- **History over the public RPC.** Creator and licence history is scanned from contract logs over Arc's
-  public RPC, 9,999 blocks per call; a hosted Envio indexer is the long-term fix.
-- **Face detector licence.** The free-level matcher uses the YuNet detector, whose weights are MIT but
-  were trained on WIDER FACE (CC BY-NC-ND images). The production replacement is Google's MediaPipe
-  BlazeFace (Apache-2.0); it is not swapped yet.
-- **No TEE.** Render keys and decrypted photos are held in ordinary process memory on one instance.
-- **Receipts bind exact bytes.** A re-encoded or cropped copy verifies as Unknown. Revocation is not
-  recall: files delivered earlier still exist and verify as "licensed when made, since revoked".
-
 ## Running it locally
 
 Needs Node 22 or later, Foundry 1.8.3, and [Arc Foundry](https://docs.arc.io/arc/tutorials/install-arc-foundry)
@@ -315,15 +242,6 @@ cd indexer && pnpm test        # Envio handlers on the in-memory test indexer
 Contracts: `pnpm deploy:arc --preflight` rehearses every transaction on an arc-anvil fork and prices it
 at the live gas price; `pnpm deploy:arc --broadcast` sends them one at a time. The web app runs on Vercel:
 see [docs/deploy-vercel.md](docs/deploy-vercel.md).
-
-## Disclosures
-
-- **AI tools:** AI coding assistance from Claude Code, directed and reviewed by me; images generated
-  with Gemini.
-- **Earlier versions:** Likeness was first built for Monad Blitz Pune V3 (winner, 10 Oct 2026), Monad
-  Metropolis and Colosseum; this repository continues that code for Arc mainnet.
-- **Pre-existing code:** some design tokens (colours, type scale, radii) are reused from my earlier
-  project, Whistle.
 
 ## Contributor notes
 
