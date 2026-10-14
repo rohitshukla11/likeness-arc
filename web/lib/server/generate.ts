@@ -28,6 +28,7 @@ import { checkPrompt, type FilterResult } from "./filter";
 import { referenceImages } from "./keyring";
 import { readEscrow, readLicence, readReceipt } from "./protocol";
 import { render } from "./render";
+import { RenderBudgetError } from "./render/budget";
 
 export type RenderRecord = {
   assetHash: Hex;
@@ -127,6 +128,9 @@ export async function generate(input: { licenceId: bigint; licensee: Address; pr
     let out;
     try {
       out = await render({ prompt: input.prompt, references, licenceId: input.licenceId, renderIndex });
+    } catch (e) {
+      if (e instanceof RenderBudgetError) throw new GenerateError(429, e.message);
+      throw e;
     } finally {
       references.forEach((r) => r.fill(0));
     }

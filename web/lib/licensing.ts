@@ -158,3 +158,24 @@ export function formatDuration(seconds: bigint | number): string {
   if (s % 3_600 === 0) return `${s / 3_600} h`;
   return `${s} s`;
 }
+
+/**
+ * This mainnet deployment keeps amounts small: at most 2 USDC in total may be deposited into escrow for
+ * one licence. The app enforces it (the contract itself has no cap; see the README).
+ */
+export const MAX_DEPOSIT_PER_LICENCE = 2_000_000n; // 2 USDC, 6 decimals
+
+/** Why a deposit is refused, or null when `amount` fits under the cap given what was already deposited. */
+export function checkDeposit(alreadyDeposited: bigint, amount: bigint): string | null {
+  if (amount <= 0n) return "enter an amount above zero";
+  const room = alreadyDeposited >= MAX_DEPOSIT_PER_LICENCE ? 0n : MAX_DEPOSIT_PER_LICENCE - alreadyDeposited;
+  if (amount > room) return `deposits are capped at ${usdc.format(MAX_DEPOSIT_PER_LICENCE)} USDC per licence on this deployment (${usdc.format(room)} USDC left)`;
+  return null;
+}
+
+/** The suggested deposit: what the remaining renders cost, capped by the room left under the per-licence cap. */
+export function suggestedDeposit(pricePerRender: bigint, rendersLeft: number, alreadyDeposited: bigint): bigint {
+  const need = pricePerRender * BigInt(Math.max(0, rendersLeft));
+  const room = alreadyDeposited >= MAX_DEPOSIT_PER_LICENCE ? 0n : MAX_DEPOSIT_PER_LICENCE - alreadyDeposited;
+  return need < room ? need : room;
+}

@@ -17,3 +17,19 @@ describe("status: gas top-up", () => {
     expect(drip().configured).toBe(false);
   });
 });
+
+describe("status: Dynamic delegated access on Arc mainnet", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  const delegation = () => integrations().find((i) => i.key === "dynamic-delegation")!;
+
+  it("stays off without DYNAMIC_DELEGATION_ENABLED=1, even with every credential set", () => {
+    vi.stubEnv("NEXT_PUBLIC_DYNAMIC_ENV_ID", "env");
+    vi.stubEnv("DYNAMIC_API_KEY", "k");
+    vi.stubEnv("DYNAMIC_WEBHOOK_SECRET", "w");
+    vi.stubEnv("DYNAMIC_DELEGATION_PRIVATE_KEY_PEM", "-----BEGIN PRIVATE KEY-----\nx\n-----END PRIVATE KEY-----");
+    vi.stubEnv("DYNAMIC_DELEGATION_ENABLED", "");
+    expect(delegation().configured).toBe(false);
+    vi.stubEnv("DYNAMIC_DELEGATION_ENABLED", "1");
+    expect(delegation().configured).toBe(true);
+  });
+});

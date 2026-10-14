@@ -9,7 +9,7 @@ import { USDC } from "@/lib/chain";
 import { api, browserPub, reason, write } from "@/lib/client/tx";
 import { categoryLabels } from "@/lib/categories";
 import { deployment } from "@/lib/deployment";
-import { usdc, type Licence } from "@/lib/licensing";
+import { checkDeposit, MAX_DEPOSIT_PER_LICENCE, suggestedDeposit, usdc, type Licence } from "@/lib/licensing";
 import { useBrandCards, useProfiles } from "@/lib/client/profiles";
 import { AppPage, btnClass, Card, CreatorFace, Initial, StatCard, StatusPill } from "@/components/ds";
 import { IconSearch } from "@/components/ds/icons";
@@ -53,6 +53,8 @@ export function BrandView({ wallet, toggle }: { wallet: ActiveWallet; toggle?: R
     setBusy(true);
     try {
       const amount = usdc.parse(amounts[l.id] ?? suggested(l));
+      const capped = checkDeposit(BigInt(l.escrow.deposited), amount);
+      if (capped) throw new Error(capped);
       const allowance = await browserPub.readContract({ address: USDC, abi: erc20Abi, functionName: "allowance", args: [wallet.address, deployment.LicenseEscrow!] });
       if (allowance < amount) {
         setMsg("Approving USDC for the escrow…");
@@ -101,8 +103,8 @@ export function BrandView({ wallet, toggle }: { wallet: ActiveWallet; toggle?: R
       }
     >
       <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="USDC balance" value={balance === null ? "…" : money(balance)} note="Circle USDC on Monad testnet" />
-        <StatCard label="In escrow" value={money(inEscrow)} note="refundable once a licence ends" />
+        <StatCard label="USDC balance" value={balance === null ? "…" : money(balance)} note="Circle USDC on Arc mainnet" />
+        <StatCard label="In escrow" value={money(inEscrow)} note={`refundable once a licence ends; up to ${usdc.format(MAX_DEPOSIT_PER_LICENCE)} USDC per licence`} />
         <StatCard label="Spent on renders" value={money(spent)} note="creator payout plus the 10% fee" />
         <StatCard label="Renders" value={renders} note={`${active.length} active licence${active.length === 1 ? "" : "s"}`} />
       </div>
@@ -232,5 +234,5 @@ function BrandProfileCard({ address }: { address: string }) {
 }
 
 function suggested(l: Row): string {
-  return usdc.format(BigInt(l.pricePerRender) * BigInt(Math.max(0, l.renderCap - l.renderCount)));
+  return usdc.format(suggestedDeposit(BigInt(l.pricePerRender), l.renderCap - l.renderCount, BigInt(l.escrow.deposited)));
 }

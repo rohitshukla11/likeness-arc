@@ -14,6 +14,7 @@ import "server-only";
  * published samples, after a wallet signature) and to signed-in brands with a completed profile
  * (published only, rate limited per brand).
  */
+import { RenderBudgetError } from "./render/budget";
 import { randomBytes } from "node:crypto";
 import { hkdfSync } from "node:crypto";
 import { x25519 } from "@noble/curves/ed25519.js";
@@ -109,7 +110,9 @@ export async function createSamples(input: { creator: Address; auth: SignedActio
     refs = await Promise.all(input.set.items.map((_, i) => openItem(dek!, input.set, i)));
     const made = await Promise.all(
       prompts.map(async (p, i) => {
-        const out = await render({ prompt: p.prompt, references: refs, licenceId: 0n, renderIndex: i });
+        const out = await render({ prompt: p.prompt, references: refs, licenceId: 0n, renderIndex: i }).catch((e) => {
+          throw e instanceof RenderBudgetError ? new HttpError(429, e.message) : e;
+        });
         const id = randomBytes(8).toString("hex");
         const rec = await publishPreview({ bytes: out.bytes, kind: "sample-render", owner: who, edge: 1024, status: "pending", ref: id, model: out.model });
         return { id, sha256: rec.sha256, scene: p.scene, prompt: p.prompt, model: out.model, test: out.test, status: "pending" as const, createdAt: Date.now() };

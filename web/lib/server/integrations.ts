@@ -26,7 +26,7 @@ export function integrations(): Integration[] {
       key: "dynamic",
       name: "Dynamic (sign-in, embedded wallets)",
       configured: set("NEXT_PUBLIC_DYNAMIC_ENV_ID"),
-      turnsOn: "Email sign-in and embedded wallets on Monad testnet for creators and brands",
+      turnsOn: "Email sign-in and embedded wallets on Arc mainnet for creators and brands",
       env: ["NEXT_PUBLIC_DYNAMIC_ENV_ID"],
       whenMissing: "Wallets are off; only seeded dev wallets (DEV_WALLETS=1) can act in the UI",
     },
@@ -34,16 +34,21 @@ export function integrations(): Integration[] {
       key: "gas-drip",
       name: "Gas top-up for new wallets",
       configured: secret("DRIP_PRIVATE_KEY", "DRIP_KEY_FILE"),
-      turnsOn: `A one-time MON top-up (${process.env.DRIP_AMOUNT_MON ?? "0.5"} MON) to each new, empty wallet, so creators and brands never buy gas`,
-      env: ["DRIP_PRIVATE_KEY or DRIP_KEY_FILE", "DRIP_AMOUNT_MON", "DRIP_PER_IP_PER_HOUR", "DRIP_PER_HOUR"],
-      whenMissing: "New wallets get no gas: registering and paying fail until the wallet holds testnet MON",
+      turnsOn: `A one-time gas top-up (${process.env.DRIP_AMOUNT_USDC ?? "0.05"} USDC, native) to each new, empty wallet, so creators and brands can transact`,
+      env: ["DRIP_PRIVATE_KEY or DRIP_KEY_FILE", "DRIP_AMOUNT_USDC", "DRIP_PER_IP_PER_HOUR", "DRIP_PER_HOUR"],
+      whenMissing: "New wallets get no gas: registering and paying fail until the wallet holds USDC for gas",
     },
     {
       key: "dynamic-delegation",
       name: "Dynamic delegated access",
-      configured: set("NEXT_PUBLIC_DYNAMIC_ENV_ID", "DYNAMIC_API_KEY", "DYNAMIC_WEBHOOK_SECRET") && secret("DYNAMIC_DELEGATION_PRIVATE_KEY_PEM", "DYNAMIC_DELEGATION_PRIVATE_KEY_FILE"),
+      // Off on the Arc mainnet deployment: Dynamic's delegated access is sandbox-only without an
+      // Enterprise plan. It needs an explicit DYNAMIC_DELEGATION_ENABLED=1 on top of its credentials.
+      configured:
+        process.env.DYNAMIC_DELEGATION_ENABLED === "1" &&
+        set("NEXT_PUBLIC_DYNAMIC_ENV_ID", "DYNAMIC_API_KEY", "DYNAMIC_WEBHOOK_SECRET") &&
+        secret("DYNAMIC_DELEGATION_PRIVATE_KEY_PEM", "DYNAMIC_DELEGATION_PRIVATE_KEY_FILE"),
       turnsOn: "One-click renders: the brand's embedded wallet sends payRender through the render service, under the payRender-only policy",
-      env: ["DYNAMIC_API_KEY", "DYNAMIC_WEBHOOK_SECRET", "DYNAMIC_DELEGATION_PRIVATE_KEY_FILE or _PEM"],
+      env: ["DYNAMIC_DELEGATION_ENABLED=1 (off on Arc mainnet)", "DYNAMIC_API_KEY", "DYNAMIC_WEBHOOK_SECRET", "DYNAMIC_DELEGATION_PRIVATE_KEY_FILE or _PEM"],
       whenMissing: "Brands confirm each payRender in their own wallet; seeded test brands can use dev delegation (DEV_DELEGATION=1)",
     },
     {
