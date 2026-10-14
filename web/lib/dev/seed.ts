@@ -38,22 +38,33 @@ export async function syntheticPortraits(): Promise<Uint8Array[]> {
   );
 }
 
-export function devAttestation(refHash: Hex): Attestation {
+/** "dev-unverified" for the local test creator; "demo-scripted" for the scripted Arc mainnet demo creator. */
+export type SeedProvider = typeof PROVIDERS.devUnverified | typeof PROVIDERS.demoScripted;
+
+export function devAttestation(refHash: Hex, provider: SeedProvider = PROVIDERS.devUnverified): Attestation {
   return {
     referenceSetHash: refHash,
-    livenessSessionHash: keccak256(toHex(`dev-seed:${Date.now()}:${Math.random()}`)),
-    livenessProvider: stringToHex(PROVIDERS.devUnverified, { size: 32 }),
-    ageProvider: stringToHex(PROVIDERS.devUnverified, { size: 32 }),
+    livenessSessionHash: keccak256(toHex(`${provider}:${Date.now()}:${Math.random()}`)),
+    livenessProvider: stringToHex(provider, { size: 32 }),
+    ageProvider: stringToHex(provider, { size: 32 }),
     verifiedAt: BigInt(Math.floor(Date.now() / 1000)),
     // CreatorRegistry only registers adults; the provider name, not this flag, carries the truth here.
     adult: true,
   };
 }
 
-/** Seal the synthetic set under the dev secret's reference key. Returns the set and its vault key. */
-export async function sealDevReferenceSet(creator: Address, devSecret: string): Promise<{ set: ReferenceSet; vaultKey: string; hash: Hex }> {
+/**
+ * Seal a reference set under the dev secret's reference key (the same envelope code as a passkey
+ * creator). Defaults to the placeholder drawings; the scripted demo passes its synthetic face photos.
+ * Returns the set and its vault key.
+ */
+export async function sealDevReferenceSet(
+  creator: Address,
+  devSecret: string,
+  images?: Uint8Array[],
+): Promise<{ set: ReferenceSet; vaultKey: string; hash: Hex }> {
   const key = await devNamespaceKey(devSecret, { kind: "reference" });
-  const captures = await syntheticPortraits();
+  const captures = images ? images.map((i) => new Uint8Array(i)) : await syntheticPortraits();
   const set = await sealReferenceSet(key.kek, creator, captures);
   captures.forEach((c) => c.fill(0));
   const hash = await referenceSetHash(set);
@@ -67,16 +78,19 @@ export async function registerDevCreator(opts: {
   registry: Address;
   refHash: Hex;
   terms: Terms;
+  provider?: SeedProvider;
+  /** Fee overrides (Arc: at least 20 gwei). */
+  fees?: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint };
 }): Promise<Hex> {
   const { pub, creator, registry } = opts;
   const who = creator.account.address;
-  const attestation = devAttestation(opts.refHash);
+  const attestation = devAttestation(opts.refHash, opts.provider);
   const nonce = await pub.readContract({ address: registry, abi: CreatorRegistryAbi, functionName: "attestationNonce", args: [who] });
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
   const sig = await signAttestation(opts.attesterKey, registry, await pub.getChainId(), who, attestation, nonce, deadline);
   const args = [who, attestation, deadline, sig, opts.terms] as const;
   const gas = await pub.estimateContractGas({ account: who, address: registry, abi: CreatorRegistryAbi, functionName: "register", args });
-  const hash = await creator.writeContract({ address: registry, abi: CreatorRegistryAbi, functionName: "register", args, gas: (gas * 115n) / 100n });
+  const hash = await creator.writeContract({ address: registry, abi: CreatorRegistryAbi, functionName: "register", args, gas: (gas * 115n) / 100n, ...(opts.fees ?? {}) });
   const r = await pub.waitForTransactionReceipt({ hash });
   if (r.status !== "success") throw new Error(`register reverted: ${hash}`);
   return hash;

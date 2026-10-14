@@ -9,7 +9,7 @@ import { IconArrowLeft, VerifiedMark } from "@/components/ds/icons";
 import { Addr, Note, Tx, TrustBadge, fmtDay, shortAddr } from "@/components/ui";
 import { categoryLabels, regionLabels } from "@/lib/categories";
 import { explorer } from "@/lib/chain";
-import { formatDuration, usdc } from "@/lib/licensing";
+import { formatDuration, usdc, DEMO_CREATOR_NAME, DEMO_TRUST_LABEL } from "@/lib/licensing";
 import { publicProfile } from "@/lib/server/profiles";
 import { readCreatorWithHistory } from "@/lib/server/protocol";
 import { LEVEL_SUMMARY, LIVENESS_NOTE } from "@/lib/verification";
@@ -32,7 +32,7 @@ export default async function CreatorPage({ params }: PageProps<"/market/[addres
   const method = c.trust.level === "verified" ? c.trust.livenessMethod : null;
 
   const tags = [...profile.tags.tone, ...profile.tags.setting, ...(profile.tags.ageRange ? [profile.tags.ageRange] : [])];
-  const name = shortAddr(c.address);
+  const name = c.trust.level === "demo" ? DEMO_CREATOR_NAME : shortAddr(c.address);
 
   return (
     <AppPage
@@ -100,6 +100,7 @@ export default async function CreatorPage({ params }: PageProps<"/market/[addres
                   </dd>
                 </dl>
                 {c.trust.level === "unverified-test" && <Note>This is a seeded test creator. No liveness or ID check was run; its images are synthetic placeholders.</Note>}
+                {c.trust.level === "demo" && <Note>{DEMO_TRUST_LABEL}: a synthetic, non-real face attested by our attester without an ID check, used for the scripted end-to-end flow. Not listed in the marketplace.</Note>}
               </div>
             </div>
           </Card>

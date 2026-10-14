@@ -112,11 +112,17 @@ export const PROVIDERS = {
   didit: "didit",
   diditSandbox: "didit-sandbox",
   devUnverified: "dev-unverified",
+  /** The scripted demo creator on Arc mainnet: a synthetic, non-real face attested without an ID check. */
+  demoScripted: "demo-scripted",
 } as const;
+
+export const DEMO_TRUST_LABEL = "Demo (scripted, no ID check)";
+export const DEMO_CREATOR_NAME = "Demo Creator";
 
 export type Trust =
   | { level: "verified"; liveness: string; age: string; sandbox: boolean; livenessMethod: LivenessMethod }
   | { level: "unverified-test"; liveness: string; age: string }
+  | { level: "demo"; liveness: string; age: string }
   | { level: "unknown"; liveness: string; age: string };
 
 export function providerName(b: Hex): string {
@@ -133,6 +139,7 @@ export function trustOf(livenessProvider: Hex, ageProvider: Hex): Trust {
   const liveness = providerName(livenessProvider);
   const age = providerName(ageProvider);
   if (liveness === PROVIDERS.devUnverified || age === PROVIDERS.devUnverified) return { level: "unverified-test", liveness, age };
+  if (liveness === PROVIDERS.demoScripted || age === PROVIDERS.demoScripted) return { level: "demo", liveness, age };
   const didit = [PROVIDERS.didit, PROVIDERS.diditSandbox] as string[];
   const live = parseDiditLiveness(liveness);
   if (live && didit.includes(age)) return { level: "verified", liveness, age, sandbox: live.sandbox || age === PROVIDERS.diditSandbox, livenessMethod: live.method };

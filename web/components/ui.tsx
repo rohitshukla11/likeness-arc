@@ -5,7 +5,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { explorer } from "@/lib/chain";
-import type { LicenceStatus, Trust } from "@/lib/licensing";
+import { DEMO_TRUST_LABEL, type LicenceStatus, type Trust } from "@/lib/licensing";
 import { LIVENESS_NOTE } from "@/lib/verification";
 import { btnClass, StatusPill, type PillKind } from "./ds";
 
@@ -44,6 +44,12 @@ export function TrustBadge({ trust }: { trust: Trust }) {
     return (
       <StatusPill kind="waiting" title="A throwaway test creator. No liveness or ID check was run.">
         Unverified test creator
+      </StatusPill>
+    );
+  if (trust.level === "demo")
+    return (
+      <StatusPill kind="waiting" title="A scripted demo creator: a synthetic, non-real face, attested without an ID or liveness check. Not listed in the marketplace.">
+        {DEMO_TRUST_LABEL}
       </StatusPill>
     );
   return (

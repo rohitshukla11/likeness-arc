@@ -113,6 +113,7 @@ export async function verifyHash(assetHash: Hex, manifest: ManifestRead | null =
   const paid = h.renders.find((r) => r.assetHash.toLowerCase() === assetHash.toLowerCase());
   const rev = l.status === "Revoked" ? await revokedAt(l) : null;
   if (c?.trust.level === "unverified-test") notes.push("The creator is an unverified test creator: no liveness or ID check was run.");
+  if (c?.trust.level === "demo") notes.push("The creator is the scripted demo creator (Demo Creator): a synthetic, non-real face attested without an ID or liveness check.");
   if (c?.trust.level === "verified") {
     notes.push(`Creator verified by Didit${c.trust.sandbox ? " (sandbox)" : ""}: ID 18+, ${c.trust.livenessMethod} liveness, selfie-to-ID face match. ${LIVENESS_NOTE[c.trust.livenessMethod]}`);
     if (c.upgradedAt)

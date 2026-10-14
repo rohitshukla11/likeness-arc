@@ -16,7 +16,8 @@
     "agent:dynamic": "tsx --conditions=react-server scripts/dynamic-agent.ts",
     "facecheck": "tsx --conditions=react-server scripts/facecheck.ts",
     "face:models": "sh scripts/face-models.sh",
-    "deploy:arc": "tsx --conditions=react-server scripts/deploy-arc.ts"
+    "deploy:arc": "tsx --conditions=react-server scripts/deploy-arc.ts",
+    "demo:arc": "tsx --conditions=react-server scripts/demo-arc.ts"
   },
   "dependencies": {
     "@category-labs/mera": "0.2.0",

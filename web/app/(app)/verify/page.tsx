@@ -13,6 +13,7 @@ import { AppPage, BrandChip, btnClass, Card, CreatorFace, ErrorCard, StatusPill 
 import { IconCheck, IconCross, IconQuestion, IconUpload } from "@/components/ds/icons";
 import { fmtDate, fmtDay, Tx, inputClass } from "@/components/ui";
 import type { Trust } from "@/lib/licensing";
+import { DEMO_TRUST_LABEL } from "@/lib/licensing";
 
 type V = {
   verdict: "Licensed" | "Expired" | "Revoked" | "Unknown" | "ProfilePhoto" | "Sample";
@@ -401,7 +402,7 @@ function TrustPill({ trust }: { trust: Trust }) {
     );
   return (
     <span className="self-start">
-      <StatusPill kind="revoked">{trust.level === "unverified-test" ? "Unverified test creator" : "Unknown attestation"}</StatusPill>
+      <StatusPill kind="revoked">{trust.level === "unverified-test" ? "Unverified test creator" : trust.level === "demo" ? DEMO_TRUST_LABEL : "Unknown attestation"}</StatusPill>
     </span>
   );
 }
