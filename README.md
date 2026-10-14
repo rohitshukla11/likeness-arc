@@ -6,7 +6,7 @@
 
 > **Live on Arc mainnet.** Unaudited contracts; this mainnet deployment uses deliberately small prices and caps.
 
-**Live app:** <LIVE_URL> (Arc mainnet) ·
+**Live app:** [likenesss.vercel.app](https://likenesss.vercel.app) (Arc mainnet) ·
 **Code:** [github.com/rohitshukla11/likeness-arc](https://github.com/rohitshukla11/likeness-arc) ·
 **Contracts:** [below](#contracts-on-arc-mainnet), verified on Sourcify
 
