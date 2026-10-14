@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const SOURCE_URL = "https://github.com/rohitshukla11/Likeness";
+export const SOURCE_URL = "https://github.com/rohitshukla11/likeness-arc";
 
 /** Footer from the landing mockup, shared by every page. */
 export function SiteFooter() {

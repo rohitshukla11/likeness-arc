@@ -1,28 +1,40 @@
 #!/bin/sh
-# Copy this machine's configuration to the linked Vercel project (Production): public settings and
-# API keys from web/.env.local, signing keys and the C2PA chain from the secrets folder (default
-# ../.secrets). Values are read from the files and piped to the Vercel CLI; none is printed.
+# Copy this machine's configuration to the linked Vercel project (Production) for the Arc mainnet
+# deployment: public settings and API keys from web/.env.local, signing keys and the C2PA chain from the
+# secrets folder (default ../.secrets, i.e. ~/likeness-arc/.secrets). Values are read from the files and
+# piped to the Vercel CLI; none is printed.
 #
 #   cd web && npx vercel login && npx vercel link     # once, in your own terminal
-#   sh scripts/vercel-env.sh https://www.likeness.site
+#   sh scripts/vercel-env.sh https://your-domain
 #
-# Before writing anything it shows the linked project's name and asks you to type it back.
+# It sets NEXT_PUBLIC_APP_URL and NEXT_PUBLIC_RP_ID from the URL, shows the linked project's name and
+# asks you to type it back before writing anything. It never sets DYNAMIC_DELEGATION_ENABLED or any
+# Dynamic delegation or server-wallet secret: delegated access stays off on Arc mainnet.
 # Then redeploy without the build cache (NEXT_PUBLIC_* values are compiled into the page).
 set -eu
 URL="${1:?usage: sh scripts/vercel-env.sh https://your-domain}"
 HOST="$(printf '%s' "$URL" | sed -E 's#^https?://##; s#/.*$##')"
-# Passkeys bind to the RP ID: the parent domain covers both example.com and www.example.com.
-RP_ID="$(printf '%s' "$HOST" | sed -E 's#^www\.##')"
+# Passkeys bind to the RP ID: the parent domain covers both example.com and www.example.com
+# (a *.vercel.app host is used as is).
+case "$HOST" in
+  *.vercel.app) RP_ID="$HOST" ;;
+  *) RP_ID="$(printf '%s' "$HOST" | sed -E 's#^www\.##')" ;;
+esac
 VERCEL="npx --yes vercel@63.1.2"
 [ -f .env.local ] || { echo "run from web/ (no .env.local here)"; exit 1; }
-[ -f .vercel/project.json ] || { echo "not linked: run 'npx vercel link' in web/ first"; exit 1; }
 SECRETS="${SECRETS_DIR:-../.secrets}"
 [ -d "$SECRETS" ] || { echo "no secrets folder at $SECRETS"; exit 1; }
 
-# Which project is this? Show it and ask, so nothing is written to the wrong one.
-PROJECT="$(sed -nE 's/.*"projectName" *: *"([^"]*)".*/\1/p' .vercel/project.json)"
-PROJECT_ID="$(sed -nE 's/.*"projectId" *: *"([^"]*)".*/\1/p' .vercel/project.json)"
-echo "Linked Vercel project: ${PROJECT:-(name not recorded)}  (id ${PROJECT_ID:-unknown})"
+# Which project is this? `vercel link` writes web/.vercel/project.json, or ../.vercel/repo.json when
+# linked from the repository root. Show it and ask, so nothing is written to the wrong one.
+if [ -f .vercel/project.json ]; then
+  PROJECT="$(sed -nE 's/.*"projectName" *: *"([^"]*)".*/\1/p' .vercel/project.json)"
+elif [ -f ../.vercel/repo.json ]; then
+  PROJECT="$(python3 -c 'import json;print(next((p["name"] for p in json.load(open("../.vercel/repo.json")).get("projects",[]) if p.get("directory")=="web"),""))')"
+else
+  echo "not linked: run 'npx vercel link' in web/ first"; exit 1
+fi
+echo "Linked Vercel project: ${PROJECT:-(name not recorded)}"
 echo "Site URL:              https://$HOST   (passkey RP ID: $RP_ID)"
 echo "Secrets folder:        $(cd "$SECRETS" && pwd)"
 printf "Write the Production environment variables to this project? Type the project name to confirm: "
@@ -46,26 +58,23 @@ set_value NEXT_PUBLIC_APP_URL "https://$HOST"
 set_value NEXT_PUBLIC_DYNAMIC_ENV_ID "$(local_value NEXT_PUBLIC_DYNAMIC_ENV_ID)"
 set_value NEXT_PUBLIC_ARC_RPC_URL "$(local_value NEXT_PUBLIC_ARC_RPC_URL)"
 
-# Storage on Vercel: private Blob (connect a Blob store to the project for BLOB_READ_WRITE_TOKEN)
+# Storage on Vercel: private Blob (connect a Blob store to the project for its token)
 set_value STORE_DRIVER blob
 
-# Server signing keys and the C2PA chain, from ../.secrets
+# Server signing keys and the C2PA chain, from the secrets folder
 set_file ATTESTER_PRIVATE_KEY "$SECRETS/attester.key"
 set_file RENDER_AGENT_PRIVATE_KEY "$SECRETS/render-agent.key"
 set_file DRIP_PRIVATE_KEY "$SECRETS/drip.key"
 set_file C2PA_CERT_PEM "$SECRETS/c2pa/signer.pem"
 set_file C2PA_KEY_PEM "$SECRETS/c2pa/signer.key"
-# Dynamic delegated access (RSA key whose public half is registered in Dynamic) and the render agent's
-# server wallet (written by pnpm agent:dynamic); skipped until the files exist
-set_file DYNAMIC_DELEGATION_PRIVATE_KEY_PEM "$SECRETS/dynamic-delegation.pem"
-set_file DYNAMIC_AGENT_JSON "$SECRETS/dynamic-agent.json"
 
 # Integrations and settings, from .env.local
-for name in DIDIT_API_KEY GEMINI_API_KEY ARC_RPC_URL DYNAMIC_API_KEY DYNAMIC_WEBHOOK_SECRET DIDIT_WEBHOOK_SECRET; do
+for name in DIDIT_API_KEY GEMINI_API_KEY ARC_RPC_URL DIDIT_WEBHOOK_SECRET; do
   set_value "$name" "$(local_value "$name")" sensitive
 done
 for name in VERIFICATION_LEVEL DIDIT_WORKFLOW_ID_FREE DIDIT_WORKFLOW_ID_FULL DIDIT_CAPTURE_MATCH_THRESHOLD \
-  DRIP_AMOUNT_USDC DRIP_PER_IP_PER_HOUR DRIP_PER_HOUR GEMINI_IMAGE_MODEL GEMINI_IMAGE_SIZE GEMINI_FILTER_MODEL ENVIO_GRAPHQL_URL; do
+  LOCAL_FACE_MATCH_THRESHOLD SAMPLE_FACE_MATCH_THRESHOLD DRIP_AMOUNT_USDC DRIP_PER_IP_PER_HOUR DRIP_PER_HOUR \
+  RENDERS_PER_DAY GEMINI_IMAGE_MODEL GEMINI_IMAGE_SIZE GEMINI_FILTER_MODEL ENVIO_GRAPHQL_URL; do
   set_value "$name" "$(local_value "$name")"
 done
 

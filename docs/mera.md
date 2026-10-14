@@ -2,14 +2,14 @@
 
 **Bounty:** Mera, "One Passkey, Many Keys". **Video:** [youtu.be/xTEIn8F2gB4](https://youtu.be/xTEIn8F2gB4) · [Back to the README](../README.md)
 
-## Status on likeness.site (October 2026)
+## Status on the Arc mainnet deployment
 
 - Mera's passkey PRF output is used as **encryption key material for a person's face**, never as a
   wallet or a login (the wallet is Dynamic's).
 - The live namespace is **`likeness:reference`**: it derives the key that seals a creator's reference
   photos in the browser; the server stores only ciphertext.
-- The **cross-device key test is live** on likeness.site (Become a creator → Details) and passed with
-  the same synced passkey in Safari and Chrome.
+- The **cross-device key test** is in the app (Become a creator → Details). It has not been re-run on the
+  Arc deployment's domain yet.
 
 The rest of this page describes only what the code does.
 
@@ -19,7 +19,7 @@ Each namespace string is hashed with sha256 into the 32-byte PRF salt Mera requi
 ([`namespaces.ts`](../web/lib/crypto/namespaces.ts)). A different salt gives an unrelated PRF output, so
 each namespace is its own key domain.
 
-| Namespace | Derives | Used in | Live on likeness.site |
+| Namespace | Derives | Used in | In the live app |
 |---|---|---|---|
 | `likeness:reference` | KEK (AES-256-GCM) that wraps the reference photos' data key; a public fingerprint | Onboarding (sealing the photos), Re-verify, public-photo picker, sample renders, the cross-device key test | Yes |
 | `likeness:licence:<id>` | KEK (AES-256-GCM) for a per-licence copy of the data key | Creator dashboard, "Release photos to renderer" ([`KeyRelease.tsx`](../web/components/dashboard/KeyRelease.tsx)) | Deployed; see the limits below |
@@ -30,7 +30,7 @@ each namespace is its own key domain.
 [`passkey.ts`](../web/lib/crypto/passkey.ts) is the only file that calls Mera:
 
 1. `createPasskeyWithPrfOutput` (first time) or `getPasskeyPrfOutput` (any later time, any device) with
-   `rpId` = `NEXT_PUBLIC_RP_ID` (`likeness.site`) and the namespace's salt. The passkey is discoverable,
+   `rpId` = `NEXT_PUBLIC_RP_ID` (the live app's domain) and the namespace's salt. The passkey is discoverable,
    so no credential ID needs to be supplied.
 2. The 32-byte PRF output goes through WebCrypto HKDF-SHA256 (zero salt) under separate `info` labels
    ([`keys.ts`](../web/lib/crypto/keys.ts)):
@@ -96,8 +96,7 @@ nothing.
 
 How it was checked:
 
-- **Live on likeness.site, October 2026:** same synced iCloud Keychain passkey in Safari and Chrome →
-  same fingerprint, same ciphertext hash, note decrypted.
+- **Live run on the Arc deployment:** not yet.
 - **Unit tests** ([`crypto.test.ts`](../web/lib/crypto/crypto.test.ts)): a fake authenticator with PRF =
   HMAC(credential secret, rpId ‖ salt), synced to a second instance, gets the same fingerprint and
   decrypts; a different passkey, namespace or rpId fails.
@@ -119,7 +118,7 @@ profile authenticator, Bitwarden or Dashlane
 - **The per-licence key lives in one instance's memory.** On Vercel, the service-key fetch, the release
   and the render can land on different instances, and a new instance doesn't have the key, so the
   creator may have to release again. The licence release with a real passkey has not been demonstrated
-  on likeness.site; the on-chain renders so far are from the seeded test creator, whose keys come from
+  on the live app; the fork tests run it with the seeded test creator, whose keys come from
   a dev secret through the same HKDF ([`devkeys.ts`](../web/lib/crypto/devkeys.ts)).
 - **`likeness:brand:<id>` is not wired into the app.**
-- **Keys are bound to the rpId** (`likeness.site`); a passkey made on another host derives different keys.
+- **Keys are bound to the rpId** (the live app's domain); a passkey made on another host derives different keys.
