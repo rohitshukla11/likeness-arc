@@ -1,9 +1,8 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
-# Likeness on Monad testnet: all four protocol contracts from the deployment block.
+# Likeness on Arc mainnet (chain 5042): all four protocol contracts from the deployment block.
 #
-# Data source: HyperSync (built in for monad-testnet) when ENVIO_API_TOKEN is set, with the RPC as a
-# fallback; without a token, the RPC is the sync source (ENVIO_RPC_FOR=sync, the default here).
-# `pnpm local` picks this for you. The public RPC serves eth_getLogs 100 blocks at a time.
+# Data source: the RPC (ENVIO_RPC_FOR=sync, the default here). Arc's public endpoint serves
+# eth_getLogs up to 10,000 blocks at a time (https://docs.arc.io/arc/references/rpc-endpoints.md).
 name: likeness-indexer
 contracts:
   - name: CreatorRegistry
@@ -36,13 +35,13 @@ contracts:
 field_selection:
   transaction_fields: [hash]
 chains:
-  - id: 10143
-    start_block: ${ENVIO_START_BLOCK:-69802475}
+  - id: 5042
+    start_block: ${ENVIO_START_BLOCK:-0}
     rpc:
-      - url: ${ENVIO_RPC_URL:-https://testnet-rpc.monad.xyz}
+      - url: ${ENVIO_RPC_URL:-https://rpc.mainnet.arc.io}
         for: ${ENVIO_RPC_FOR:-sync}
-        initial_block_interval: 100
-        interval_ceiling: 100
+        initial_block_interval: 9999
+        interval_ceiling: 9999
     contracts:
       - name: CreatorRegistry
         address: "0xc0eadb706D175e317c8D89cD250781fC3d14008B"

@@ -7,7 +7,7 @@ on:
 
 jobs:
   contracts:
-    name: forge test (unit, fuzz, invariant, Monad testnet fork)
+    name: forge test (unit, fuzz, invariant, Arc mainnet fork)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,15 +22,33 @@ jobs:
         working-directory: contracts
         run: forge build --sizes
 
-      # The fork suite reads Circle USDC on Monad testnet through the public RPC.
       - name: forge test
         working-directory: contracts
+        run: forge test --no-match-path "test/fork/*"
+
+      # Arc Foundry (arc-forge, arc-anvil) models Arc's native USDC; plain Foundry can't run Arc forks.
+      # https://docs.arc.io/arc/tutorials/install-arc-foundry.md
+      - name: Install Arc Foundry
+        working-directory: .
+        run: |
+          v=v0.8.0-2; f=arc-foundry-$v-x86_64-unknown-linux-gnu.tar.gz
+          sudo apt-get install -y -qq libusb-1.0-0 >/dev/null
+          curl -sSL -o "$f" "https://github.com/circlefin/arc-foundry/releases/download/$v/$f"
+          curl -sSL -o "$f.sha256" "https://github.com/circlefin/arc-foundry/releases/download/$v/$f.sha256"
+          sha256sum -c "$f.sha256"
+          mkdir -p arc-foundry "$HOME/.local/bin" && tar -xzf "$f" -C arc-foundry
+          for b in forge cast anvil; do install -m 755 "$(find arc-foundry -type f -name $b | head -1)" "$HOME/.local/bin/arc-$b"; done
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # The fork suite deploys fresh contracts on an Arc mainnet fork with Circle's real USDC.
+      - name: arc-forge test (Arc mainnet fork)
+        working-directory: contracts
         env:
-          MONAD_RPC_URL: https://testnet-rpc.monad.xyz
-        run: forge test
+          ARC_RPC_URL: https://rpc.mainnet.arc.io
+        run: arc-forge test --match-path "test/fork/*" --network arc
 
   web:
-    name: web (crypto, pipeline, Monad fork lifecycle + build)
+    name: web (crypto, pipeline, Arc fork lifecycle + build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,12 +58,26 @@ jobs:
         with:
           submodules: recursive
 
-      # anvil and contracts/out: the attester test and the licence lifecycle on a Monad testnet fork.
+      # contracts/out for the attester test; arc-anvil for the lifecycle tests on an Arc mainnet fork
+      # (they skip until lib/deployment.ts has the deployed addresses).
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: v1.8.3
       - run: forge build
         working-directory: contracts
+      # Arc Foundry (arc-forge, arc-anvil) models Arc's native USDC; plain Foundry can't run Arc forks.
+      # https://docs.arc.io/arc/tutorials/install-arc-foundry.md
+      - name: Install Arc Foundry
+        working-directory: .
+        run: |
+          v=v0.8.0-2; f=arc-foundry-$v-x86_64-unknown-linux-gnu.tar.gz
+          sudo apt-get install -y -qq libusb-1.0-0 >/dev/null
+          curl -sSL -o "$f" "https://github.com/circlefin/arc-foundry/releases/download/$v/$f"
+          curl -sSL -o "$f.sha256" "https://github.com/circlefin/arc-foundry/releases/download/$v/$f.sha256"
+          sha256sum -c "$f.sha256"
+          mkdir -p arc-foundry "$HOME/.local/bin" && tar -xzf "$f" -C arc-foundry
+          for b in forge cast anvil; do install -m 755 "$(find arc-foundry -type f -name $b | head -1)" "$HOME/.local/bin/arc-$b"; done
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - uses: pnpm/action-setup@v4
         with:

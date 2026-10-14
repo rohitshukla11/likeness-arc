@@ -3,7 +3,7 @@
 //
 //   pnpm local
 //
-// Data source: HyperSync when ENVIO_API_TOKEN is set (env or indexer/.env), with the Monad RPC as
+// Data source: HyperSync when ENVIO_API_TOKEN is set (env or indexer/.env), with the Arc RPC as
 // fallback; otherwise the RPC alone (100 blocks per eth_getLogs). The app reads the tables through
 // ENVIO_PG_URL=postgres://postgres:testing@localhost:5433/envio-dev (printed below).
 import { spawn } from "node:child_process";
@@ -39,7 +39,7 @@ Object.assign(env, {
   ENVIO_HASURA: "false",
   ENVIO_RPC_FOR: hypersync ? "fallback" : "sync",
 });
-console.log(`Postgres on :${PORT}. Data source: ${hypersync ? "HyperSync (ENVIO_API_TOKEN set), RPC fallback" : "Monad RPC (no ENVIO_API_TOKEN)"}.`);
+console.log(`Postgres on :${PORT}. Data source: ${hypersync ? "HyperSync (ENVIO_API_TOKEN set), RPC fallback" : "Arc RPC (no ENVIO_API_TOKEN)"}.`);
 console.log(`For the app: ENVIO_PG_URL=postgres://postgres:testing@localhost:${PORT}/${DB}`);
 
 const child = spawn("npx", ["envio", "start"], { stdio: "inherit", env });

@@ -28,7 +28,7 @@ describe("Likeness indexer", () => {
     const indexer = createTestIndexer();
     await indexer.process({
       chains: {
-        10143: {
+        5042: {
           simulate: [
             ev("CreatorRegistry", "CreatorRegistered", { creator, payout, referenceSetHash: zero32 }, 100),
             ev("CreatorRegistry", "TermsSet", { creator, terms: { categories: 768n, regions: 63n, maxDuration: 2_592_000n, maxRenders: 100n, pricePerRender: 2_000_000n, autoApprove: true } }, 100),
@@ -72,7 +72,7 @@ describe("Likeness indexer", () => {
     const indexer = createTestIndexer();
     await indexer.process({
       chains: {
-        10143: {
+        5042: {
           simulate: [
             ev("CreatorRegistry", "CreatorRegistered", { creator, payout, referenceSetHash: zero32 }, 200),
             ev("CreatorRegistry", "AttestationUpdated", { creator, referenceSetHash: zero32, verifiedAt: 1_790_000_200n }, 200),

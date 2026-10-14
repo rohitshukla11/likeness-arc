@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @dev Tests only. Deployments use Circle's USDC on Monad testnet (see script/Deploy.s.sol).
+/// @dev Tests only. Deployments use Circle's USDC on Arc mainnet (see script/Deploy.s.sol).
 contract MockUSDC is ERC20 {
     constructor() ERC20("USD Coin", "USDC") {}
 

@@ -7,18 +7,18 @@ import {CreatorRegistry} from "../src/CreatorRegistry.sol";
 import {LicenseRegistry} from "../src/LicenseRegistry.sol";
 import {LicenseEscrow} from "../src/LicenseEscrow.sol";
 import {ReceiptAnchor} from "../src/ReceiptAnchor.sol";
-import {MonadTestnet} from "./MonadTestnet.sol";
+import {ArcMainnet} from "./ArcMainnet.sol";
 
-/// @notice Deploys and wires the four contracts on Monad testnet.
+/// @notice Deploys and wires the four contracts on Arc mainnet.
 ///
-///   forge script script/Deploy.s.sol --rpc-url monad_testnet --account <keystore> --broadcast
+///   forge script script/Deploy.s.sol --rpc-url arc_mainnet --account <keystore> --broadcast
 ///
 /// The key comes from an encrypted Foundry keystore (`cast wallet import`), never from an env var.
 /// Optional env: ATTESTER, RENDER_AGENT, TREASURY (each defaults to the deployer, and can be rotated
 /// later with setAttester / setRenderAgent / setTreasury) and FEE_BPS (default 1000 = 10%).
 contract Deploy is Script {
     function run() external {
-        require(block.chainid == MonadTestnet.CHAIN_ID, "not Monad testnet");
+        require(block.chainid == ArcMainnet.CHAIN_ID, "not Arc mainnet");
         address deployer = msg.sender;
         address attester = vm.envOr("ATTESTER", deployer);
         address agent = vm.envOr("RENDER_AGENT", deployer);
@@ -30,7 +30,7 @@ contract Deploy is Script {
         LicenseRegistry licences = new LicenseRegistry(deployer, creators);
         ReceiptAnchor receipts = new ReceiptAnchor(deployer);
         LicenseEscrow escrow =
-            new LicenseEscrow(deployer, IERC20(MonadTestnet.USDC), licences, receipts, treasury, feeBps);
+            new LicenseEscrow(deployer, IERC20(ArcMainnet.USDC), licences, receipts, treasury, feeBps);
         licences.setEscrow(address(escrow));
         receipts.setEscrow(address(escrow));
         escrow.setRenderAgent(agent, true);
@@ -44,9 +44,9 @@ contract Deploy is Script {
         string memory j = "deployment";
         vm.serializeUint(j, "chainId", block.chainid);
         // The block the script simulated against; the first contract lands a few blocks later, so
-        // deployments/monad-testnet.json is corrected to CreatorRegistry's creation block.
+        // deployments/arc-mainnet.json is corrected to CreatorRegistry's creation block.
         vm.serializeUint(j, "startBlock", block.number);
-        vm.serializeAddress(j, "usdc", MonadTestnet.USDC);
+        vm.serializeAddress(j, "usdc", ArcMainnet.USDC);
         vm.serializeAddress(j, "owner", deployer);
         vm.serializeAddress(j, "attester", attester);
         vm.serializeAddress(j, "renderAgent", agent);
@@ -56,6 +56,6 @@ contract Deploy is Script {
         vm.serializeAddress(j, "LicenseRegistry", address(licences));
         vm.serializeAddress(j, "ReceiptAnchor", address(receipts));
         string memory out = vm.serializeAddress(j, "LicenseEscrow", address(escrow));
-        if (vm.envOr("WRITE_DEPLOYMENT", false)) vm.writeJson(out, "../deployments/monad-testnet.json");
+        if (vm.envOr("WRITE_DEPLOYMENT", false)) vm.writeJson(out, "../deployments/arc-mainnet.json");
     }
 }

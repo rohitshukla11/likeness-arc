@@ -1,8 +1,7 @@
-# Monad: `network = "monad"` needs Foundry >= 1.8
-#   https://docs.monad.xyz/tooling-and-infra/toolkits/foundry.md
-# Verification: https://docs.monad.xyz/guides/verify-smart-contract/foundry.md also lists
-#   `metadata = true` and `metadata_hash = "none"`; Foundry 1.8.3 rejects both as unknown keys, so the
-#   default metadata hash is kept (Sourcify uses it for a full match).
+# Arc mainnet (chain 5042). Build and unit tests run on standard Foundry. The fork suite and
+# deployments use Arc Foundry (arc-forge), which models Arc's native USDC:
+#   https://docs.arc.io/arc/tutorials/install-arc-foundry.md
+# Verification: Blockscout at https://explorer.arc.io (see docs/deploy-arc.md).
 [profile.default]
 src = "src"
 out = "out"
@@ -10,7 +9,6 @@ libs = ["lib"]
 solc = "0.8.30"
 optimizer = true
 optimizer_runs = 10_000
-network = "monad"
 use_literal_content = true
 fs_permissions = [{ access = "write", path = "../deployments" }]
 remappings = [
@@ -27,8 +25,8 @@ depth = 64
 fail_on_revert = true
 
 [rpc_endpoints]
-# Public QuickNode endpoint, 50 rps: https://docs.monad.xyz/developer-essentials/testnet.md
-monad_testnet = "${MONAD_RPC_URL}"
+# Circle's public endpoint: https://docs.arc.io/arc/references/rpc-endpoints.md
+arc_mainnet = "${ARC_RPC_URL}"
 
 [lint]
 lint_on_build = false
