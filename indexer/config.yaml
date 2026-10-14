@@ -36,7 +36,7 @@ field_selection:
   transaction_fields: [hash]
 chains:
   - id: 5042
-    start_block: ${ENVIO_START_BLOCK:-0}
+    start_block: ${ENVIO_START_BLOCK:-25968293}
     rpc:
       - url: ${ENVIO_RPC_URL:-https://rpc.mainnet.arc.io}
         for: ${ENVIO_RPC_FOR:-sync}
@@ -44,10 +44,10 @@ chains:
         interval_ceiling: 9999
     contracts:
       - name: CreatorRegistry
-        address: "0xc0eadb706D175e317c8D89cD250781fC3d14008B"
+        address: "0x87934d5E1A61be3Bb06FE54AC7e21E7704731d1C"
       - name: LicenseRegistry
-        address: "0x38c8EcA2782fB64C23daB9B3432E668F81Fbacc9"
+        address: "0xE33Dc788C060cb77F79A2AFF96Ca685f6C018721"
       - name: LicenseEscrow
-        address: "0xf7659B8CFA2A484aE30e638c2490131Bc568dA0A"
+        address: "0x8a747D78811066F58A0dDe04E82165A02fA37725"
       - name: ReceiptAnchor
-        address: "0x272b5Bdf04564dA897a66aE84E18c822876d72Fe"
+        address: "0x38703a57c5f8eB2F8d1576A3d2B4B35A10D66FA6"

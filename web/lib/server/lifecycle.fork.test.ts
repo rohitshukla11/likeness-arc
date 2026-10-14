@@ -283,10 +283,12 @@ describe.skipIf(!run)("licence lifecycle on an Arc mainnet fork", () => {
     const { generate } = await import("./generate");
     await expect(generate({ licenceId, licensee: addr.brand, prompt: "studio portrait", mode: "delegated" })).rejects.toThrow(/refused/);
 
-    const before = await fork.pub.readContract({ address: USDC, abi: erc20Abi, functionName: "balanceOf", args: [addr.brand] });
-    await write(keys.brand, { address: deployment.LicenseEscrow!, abi: LicenseEscrowAbi, functionName: "refund", args: [licenceId] } as never);
-    const after = await fork.pub.readContract({ address: USDC, abi: erc20Abi, functionName: "balanceOf", args: [addr.brand] });
-    expect(after - before).toBe(PRICE);
+    // On Arc the brand's gas is paid from the same USDC balance, so compare native balances (18
+    // decimals): the refund adds PRICE and the refund transaction's own gas is taken off.
+    const before = await fork.pub.getBalance({ address: addr.brand });
+    const r = await write(keys.brand, { address: deployment.LicenseEscrow!, abi: LicenseEscrowAbi, functionName: "refund", args: [licenceId] } as never);
+    const after = await fork.pub.getBalance({ address: addr.brand });
+    expect(after - before).toBe(PRICE * 10n ** 12n - r.gasUsed * r.effectiveGasPrice);
     expect((await readEscrow(licenceId)).balance).toBe(0n);
   });
 

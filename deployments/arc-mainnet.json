@@ -1,0 +1,87 @@
+{
+  "chainId": 5042,
+  "network": "Arc mainnet",
+  "deployedAt": "2026-10-14T18:58:33.556Z",
+  "startBlock": 25968293,
+  "usdc": "0x3600000000000000000000000000000000000000",
+  "owner": "0x68343Aa0598b7FCAA102769D172e59cdDfae10f2",
+  "treasury": "0x68343Aa0598b7FCAA102769D172e59cdDfae10f2",
+  "attester": "0x7e001C6c704fa2C90ab47C2d2df921902B64527F",
+  "renderAgent": "0x8660d805D9Fb741Cef9B57d5e93Db3bDD8171F75",
+  "gasTopUpWallet": "0x0a498bab501Be6826f30b904Df16fecbc93dAEF1",
+  "feeBps": 1000,
+  "CreatorRegistry": "0x87934d5E1A61be3Bb06FE54AC7e21E7704731d1C",
+  "LicenseRegistry": "0xE33Dc788C060cb77F79A2AFF96Ca685f6C018721",
+  "ReceiptAnchor": "0x38703a57c5f8eB2F8d1576A3d2B4B35A10D66FA6",
+  "LicenseEscrow": "0x8a747D78811066F58A0dDe04E82165A02fA37725",
+  "transactions": [
+    {
+      "step": "fund drip 0.10 USDC",
+      "hash": "0x9aea96a80d8bd58bffade4d4c73238797c6403cf2a657b7e5127a1ec53e6e784",
+      "block": 25968289,
+      "gasUsed": "21000",
+      "feeUsdc": "0.000420000024213",
+      "sendToReceiptMs": 1286
+    },
+    {
+      "step": "deploy CreatorRegistry",
+      "hash": "0x4203de7a70718bd757b7ba71489c116c83e49167545f7984b7a999369629ed81",
+      "block": 25968293,
+      "gasUsed": "2132727",
+      "feeUsdc": "0.042654542459034231",
+      "sendToReceiptMs": 1775,
+      "address": "0x87934d5E1A61be3Bb06FE54AC7e21E7704731d1C"
+    },
+    {
+      "step": "deploy LicenseRegistry",
+      "hash": "0xc3fd6e90487b0a9694deda4f5f88c357f76f34c11b6eb4310409eb29ad8429fb",
+      "block": 25968297,
+      "gasUsed": "3126399",
+      "feeUsdc": "0.062527983604738047",
+      "sendToReceiptMs": 1795,
+      "address": "0xE33Dc788C060cb77F79A2AFF96Ca685f6C018721"
+    },
+    {
+      "step": "deploy ReceiptAnchor",
+      "hash": "0x151b54dc1302e8e54999e728ca23ab40445e2bdf7def614d8a6c4d912f9709db",
+      "block": 25968300,
+      "gasUsed": "567193",
+      "feeUsdc": "0.011343860653973529",
+      "sendToReceiptMs": 1385,
+      "address": "0x38703a57c5f8eB2F8d1576A3d2B4B35A10D66FA6"
+    },
+    {
+      "step": "deploy LicenseEscrow",
+      "hash": "0x96221eea18e7f4d87165211dbcbc2573308b728753e0c03d01ad8198338721a2",
+      "block": 25968304,
+      "gasUsed": "2238585",
+      "feeUsdc": "0.044771702581088505",
+      "sendToReceiptMs": 1769,
+      "address": "0x8a747D78811066F58A0dDe04E82165A02fA37725"
+    },
+    {
+      "step": "LicenseRegistry.setEscrow",
+      "hash": "0x433f68ed59bb79ee3be4d94f3be28d1c8e64d602d78b470c0dce49caceaffb98",
+      "block": 25968307,
+      "gasUsed": "47450",
+      "feeUsdc": "0.00094900005470985",
+      "sendToReceiptMs": 1242
+    },
+    {
+      "step": "ReceiptAnchor.setEscrow",
+      "hash": "0xd943f50068bb69bcc763ba06552596f51fd58559150c3c7ad80f52c97b2e26fe",
+      "block": 25968310,
+      "gasUsed": "47323",
+      "feeUsdc": "0.000946460054563419",
+      "sendToReceiptMs": 1585
+    },
+    {
+      "step": "LicenseEscrow.setRenderAgent",
+      "hash": "0xd6a4e307730645f0d97d32764c6d4abfa0b8af3d181075e0d370dd6b8365a327",
+      "block": 25968313,
+      "gasUsed": "47860",
+      "feeUsdc": "0.00095720005518258",
+      "sendToReceiptMs": 1215
+    }
+  ]
+}

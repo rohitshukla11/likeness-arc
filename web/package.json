@@ -15,7 +15,8 @@
     "c2pa:testcert": "sh scripts/c2pa-testcert.sh",
     "agent:dynamic": "tsx --conditions=react-server scripts/dynamic-agent.ts",
     "facecheck": "tsx --conditions=react-server scripts/facecheck.ts",
-    "face:models": "sh scripts/face-models.sh"
+    "face:models": "sh scripts/face-models.sh",
+    "deploy:arc": "tsx --conditions=react-server scripts/deploy-arc.ts"
   },
   "dependencies": {
     "@category-labs/mera": "0.2.0",

@@ -12,7 +12,7 @@ import { CreatorRegistryAbi } from "@/lib/abi/CreatorRegistry";
 import { LicenseEscrowAbi } from "@/lib/abi/LicenseEscrow";
 import { LicenseRegistryAbi } from "@/lib/abi/LicenseRegistry";
 import { deployment, requireAddress } from "@/lib/deployment";
-import { pub, rpcUrl, singleton } from "../chain";
+import { isLocalFork, pub, rpcUrl, singleton } from "../chain";
 import { fileGet, filePut, localDir } from "../files";
 import { emptyHistory, type History } from "./types";
 
@@ -139,8 +139,9 @@ async function scan(h: History, file: string): Promise<History> {
   let head: bigint;
   try {
     // Arc's public endpoint is load-balanced: a backend a block or two behind answers -32014 for the
-    // newest blocks, so the scan stops just short of the reported head and picks them up next time.
-    head = (await client.getBlockNumber({ cacheTime: 0 })) - HEAD_MARGIN;
+    // newest blocks, so the scan stops just short of the reported head and picks them up next time
+    // (not on a local fork, which has one backend).
+    head = (await client.getBlockNumber({ cacheTime: 0 })) - (isLocalFork() ? 0n : HEAD_MARGIN);
   } catch (e) {
     console.error(JSON.stringify({ service: "index", error: `head: ${(e as Error).message.split("\n")[0]}` }));
     return h;
